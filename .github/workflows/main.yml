@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "develop" ]
 
+env:
+  S3_BUCKET_NAME: deep-valley-back-deploy
+
 permissions:
   contents: read
 
