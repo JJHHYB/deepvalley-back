@@ -9,6 +9,8 @@ on:
 env:
   S3_BUCKET_NAME: deep-valley-back-deploy
   AWS_REGION: ap-northeast-2
+  CODE_DEPLOY_APPLICATION_NAME: deep-valley
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: deep-valley-server
 
 permissions:
   contents: read
@@ -64,14 +66,10 @@ jobs:
         run: aws s3 cp --region ${{ env.AWS_REGION }} ./deepvalley.zip s3://$S3_BUCKET_NAME/
 
       # Deploy
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      - name: Deploy to AWS EC2 from S3
         run:
-          aws deploy create-deployment \
-          --application-name deep-valley \
-          --deployment-group-name deep-valley-server \
-          --file-exists-behavior OVERWRITE \
-          --s3-location bucket=deep-valley-back-deploy,bundleType=zip,key=deepvalley.zip \ 
-          --region ${{ env.AWS_REGION }}
+          aws deploy create-deployment 
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} 
+            --deployment-config-name CodeDeployDefault.AllAtOnce 
+            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} 
+            --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
