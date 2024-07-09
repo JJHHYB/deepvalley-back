@@ -7,6 +7,7 @@ on:
     branches: [ "develop" ]
 
 env:
+  PROJECT_NAME: deep-valley
   S3_BUCKET_NAME: deep-valley-back-deploy
   AWS_REGION: ap-northeast-2
   CODE_DEPLOY_APPLICATION_NAME: deep-valley
@@ -63,17 +64,13 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload to S3
-        run: aws s3 cp --region ${{ env.AWS_REGION }} ./deepvalley.zip s3://${{ env.S3_BUCKET_NAME }}/
+        run: aws s3 cp --region ${{ env.AWS_REGION }} ./deploy/${{ env.PROJECT_NAME }}.zip s3://${{ env.S3_BUCKET_NAME }}/${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.zip
 
       # Deploy
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Deploy to AWS EC2 from S3
         run:
-          aws deploy create-deployment \
-          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-          --file-exists-behavior OVERWRITE \
-          --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=deepvalley.zip \ 
-          --region ${{ env.AWS_REGION }}
+          aws deploy create-deployment 
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} 
+            --deployment-config-name CodeDeployDefault.AllAtOnce
+            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} 
+            --s3-location bucket=${{ env.S3_BUCKET_NAME }},key=${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.zip
