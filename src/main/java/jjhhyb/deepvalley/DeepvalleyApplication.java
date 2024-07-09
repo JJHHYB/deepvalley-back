@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 public class DeepvalleyApplication {
+
 	public static void main(String[] args) {
 		SpringApplication.run(DeepvalleyApplication.class, args);
 	}
