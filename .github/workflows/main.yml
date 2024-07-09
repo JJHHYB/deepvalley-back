@@ -8,6 +8,7 @@ on:
 
 env:
   S3_BUCKET_NAME: deep-valley-back-deploy
+  AWS_REGION: ap-northeast-2
 
 permissions:
   contents: read
@@ -55,9 +56,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload to S3
         run: aws s3 cp --region ap-northeast-2 ./deepvalley.zip s3://$S3_BUCKET_NAME/
@@ -65,8 +66,8 @@ jobs:
       # Deploy
       - name: Deploy
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
         run: |
           aws deploy create-deployment \
           --application-name deep-valley \
