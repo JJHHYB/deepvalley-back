@@ -66,10 +66,14 @@ jobs:
         run: aws s3 cp --region ${{ env.AWS_REGION }} ./deepvalley.zip s3://${{ env.S3_BUCKET_NAME }}/
 
       # Deploy
-      - name: Deploy to AWS EC2 from S3
-        run:
-          aws deploy create-deployment 
-            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} 
-            --deployment-config-name CodeDeployDefault.AllAtOnce
-            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} 
-            --s3-location bucket=${{ env.S3_BUCKET_NAME }},key=$GITHUB_SHA.zip,bundleType=zip
+      - name: Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws deploy create-deployment \
+          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+          --file-exists-behavior OVERWRITE \
+          --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=deepvalley.zip \ 
+          --region ${{ env.AWS_REGION }}
