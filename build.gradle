@@ -23,6 +23,8 @@ repositories {
 	mavenCentral()
 }
 
+def profile = project.hasProperty('profile') ? project.property('profile') : 'dev'
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -31,6 +33,11 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	if(profile.equals('dev')) {
+		runtimeOnly 'com.h2database:h2'
+	}
+
 }
 
 tasks.named('test') {
