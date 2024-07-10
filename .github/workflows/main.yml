@@ -2,9 +2,9 @@ name: DeepValley server CI/CD
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "main" ]
 
 env:
   S3_BUCKET_NAME: deep-valley-back-deploy
@@ -33,7 +33,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run : ./gradlew clean build --exclude-task test
+        run: ./gradlew clean build -Pprofile=prod --exclude-task test
 
       # 디렉토리 생성
       - name: Make Directory
