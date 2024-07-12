@@ -1,4 +1,10 @@
 package jjhhyb.deepvalley.place.facility;
 
-public class Facility {
+import jakarta.persistence.Entity;
+import jjhhyb.deepvalley.place.Place;
+
+@Entity
+public class Facility extends Place {
+
+    private String type;
 }
