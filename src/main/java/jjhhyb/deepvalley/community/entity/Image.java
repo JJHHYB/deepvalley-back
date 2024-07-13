@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
@@ -19,7 +17,4 @@ public class Image {
     private Long imageId;
 
     private String imageUrl;
-
-    @OneToMany(mappedBy = "image", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewImage> reviewImages;
 }

@@ -9,7 +9,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -22,9 +21,9 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewId;
 
-    private UUID uuid;
+    private String uuid;
     private String title;
-    private ReviewRate rating;
+    private ReviewRating rating;
     private String content;
     private LocalDateTime visitedDate;
     private ReviewPrivacy privacy;
