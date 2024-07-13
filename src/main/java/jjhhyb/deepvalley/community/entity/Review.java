@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,20 +35,12 @@ public class Review {
     @Column(name = "valley_id")
     private Long valleyId;
 
+    @CreatedDate
     private LocalDateTime createdDate;
+
+    @LastModifiedDate
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> reviewImages;
-
-    @PrePersist
-    public void prePersist() {
-        this.createdDate = LocalDateTime.now();
-        this.updatedDate = LocalDateTime.now(); // 처음 저장시에 업데이트 날짜도 설정
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedDate = LocalDateTime.now();
-    }
 }
