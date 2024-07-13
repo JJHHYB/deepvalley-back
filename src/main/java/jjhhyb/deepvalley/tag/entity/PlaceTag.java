@@ -2,6 +2,7 @@ package jjhhyb.deepvalley.tag.entity;
 
 import jakarta.persistence.*;
 import jjhhyb.deepvalley.entityId.PlaceTagId;
+import jjhhyb.deepvalley.place.Place;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
