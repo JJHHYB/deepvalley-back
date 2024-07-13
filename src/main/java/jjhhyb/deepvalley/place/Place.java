@@ -1,11 +1,13 @@
 package jjhhyb.deepvalley.place;
 
 import jakarta.persistence.*;
+import jjhhyb.deepvalley.tag.entity.PlaceTag;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @DiscriminatorColumn
@@ -35,5 +37,8 @@ public class Place {
 
     @LastModifiedDate
     private LocalDateTime updatedDate;
+
+    @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PlaceTag> placeTags;
 
 }
