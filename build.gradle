@@ -23,12 +23,13 @@ repositories {
 	mavenCentral()
 }
 
+def profile = project.hasProperty('profile') ? project.property('profile') : 'dev'
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.security:spring-security-messaging'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'mysql:mysql-connector-java:8.0.30'
@@ -43,6 +44,10 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	if (profile.equals('dev')) {
+		runtimeOnly 'com.h2database:h2'
+	}
 }
 
 tasks.named('test') {
