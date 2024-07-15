@@ -7,11 +7,14 @@ import jakarta.persistence.GenerationType;
 import lombok.*;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @Builder
 @Table(name = "MEMBER")
 public class Member {
@@ -40,12 +43,5 @@ public class Member {
 
     @Column(name="DESCRIPTION")
     private String description;
-
-    @PrePersist
-    protected void onCreate() {
-        if (this.createdDate == null) {
-            this.createdDate = LocalDateTime.now();
-        }
-    }
 }
 
