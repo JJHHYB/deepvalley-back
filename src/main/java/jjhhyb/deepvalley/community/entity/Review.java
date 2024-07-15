@@ -1,7 +1,9 @@
 package jjhhyb.deepvalley.community.entity;
 
 import jakarta.persistence.*;
+import jjhhyb.deepvalley.tag.entity.ReviewTag;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -10,12 +12,11 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static lombok.AccessLevel.PROTECTED;
-
 @Entity
 @Data
-@NoArgsConstructor(access = PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,6 +41,9 @@ public class Review {
     @LastModifiedDate
     private LocalDateTime updatedDate;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "reviewId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> reviewImages;
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewTag> reviewTags;
 }
