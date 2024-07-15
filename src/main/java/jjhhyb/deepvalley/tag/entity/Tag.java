@@ -27,4 +27,13 @@ public class Tag {
 
     @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlaceTag> placeTags;
+
+    public Tag(String name) {
+        this.name = name;
+    }
+
+    public Tag(Long tagId, String name) {
+        this.tagId = tagId;
+        this.name = name;
+    }
 }

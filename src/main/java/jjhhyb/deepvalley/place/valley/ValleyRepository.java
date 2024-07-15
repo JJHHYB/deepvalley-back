@@ -1,4 +1,9 @@
 package jjhhyb.deepvalley.place.valley;
 
-public class ValleyRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ValleyRepository extends JpaRepository<Valley, Long> {
+
 }
