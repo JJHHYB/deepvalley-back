@@ -1,28 +1,24 @@
 package jjhhyb.deepvalley.entityId;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @NoArgsConstructor
+@EqualsAndHashCode
 @Embeddable
-public class ReviewTagId extends BaseId<ReviewTagId> {
+public class ReviewTagId implements Serializable {
+    @Column(name = "REVIEW_ID")
+    private Long reviewId;
+
+    @Column(name = "TAG_ID")
+    private Long tagId;
+
     public ReviewTagId(Long reviewId, Long tagId) {
-        super(reviewId, tagId);
-    }
-
-    public Long getReviewId() {
-        return getPrimaryId();
-    }
-
-    public void setReviewId(Long reviewId) {
-        setPrimaryId(reviewId);
-    }
-
-    public Long getTagId() {
-        return getSecondaryId();
-    }
-
-    public void setTagId(Long tagId) {
-        setSecondaryId(tagId);
+        this.reviewId = reviewId;
+        this.tagId = tagId;
     }
 }

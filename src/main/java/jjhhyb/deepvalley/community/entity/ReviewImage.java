@@ -2,26 +2,29 @@ package jjhhyb.deepvalley.community.entity;
 
 import jakarta.persistence.*;
 import jjhhyb.deepvalley.entityId.ReviewImageId;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import static lombok.AccessLevel.PROTECTED;
+import java.io.Serializable;
 
-@Getter
-@NoArgsConstructor(access = PROTECTED)
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 @Entity
 public class ReviewImage {
 
     @EmbeddedId
     private ReviewImageId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("reviewId")
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
     private Review reviewId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("imageId")
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id")
     private Image imageId;
 }

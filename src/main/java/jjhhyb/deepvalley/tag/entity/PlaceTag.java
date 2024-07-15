@@ -11,20 +11,20 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Data
-@NoArgsConstructor(access = PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 public class PlaceTag {
 
     @EmbeddedId
     private PlaceTagId id;
 
+    @MapsId("placeId")
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("primaryId")
     @JoinColumn(name = "place_id")
     private Place place;
 
+    @MapsId("tagId")
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("secondaryId")
     @JoinColumn(name = "tag_id")
     private Tag tag;
 }

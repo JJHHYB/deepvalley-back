@@ -2,6 +2,8 @@ package jjhhyb.deepvalley.place;
 
 import jakarta.persistence.*;
 import jjhhyb.deepvalley.tag.entity.PlaceTag;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -10,6 +12,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+@SuperBuilder
+@NoArgsConstructor
 @DiscriminatorColumn
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Place {
