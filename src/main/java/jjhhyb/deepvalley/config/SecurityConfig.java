@@ -16,6 +16,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -41,8 +44,8 @@ public class SecurityConfig {
                 .httpBasic((AbstractHttpConfigurer::disable))                                          // HTTP Basic 인증을 비활성화
                 .authorizeHttpRequests((auth) -> auth                                                  // 요청별 권한 설정
                         .requestMatchers("/api/member/register", "/api/member/login").permitAll()  // 특정 경로는 모든 사용자에게 허용
-                        .requestMatchers("/jwt-login/admin").hasRole("ADMIN")  // 특정 경로는 ADMIN 역할을 가진 사용자에게만 허용
-                        .anyRequest().authenticated()                            // 그 외의 모든 요청은 인증된 사용자에게만 허용
+                        .requestMatchers("/jwt-login/admin").hasRole("ADMIN")                        // 특정 경로는 ADMIN 역할을 가진 사용자에게만 허용
+                        .anyRequest().authenticated()                                                  // 그 외의 모든 요청은 인증된 사용자에게만 허용
                 )
                 .sessionManagement((session) -> session  // 세션 관리 설정
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // 세션을 생성하지 않고, JWT를 사용하여 인증
@@ -56,5 +59,18 @@ public class SecurityConfig {
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
         return new BCryptPasswordEncoder();
+    }
+
+    // CorsFilter Bean을 생성하는 메소드
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 }
