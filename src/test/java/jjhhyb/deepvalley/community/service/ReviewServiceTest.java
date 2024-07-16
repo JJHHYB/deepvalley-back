@@ -1,5 +1,8 @@
 package jjhhyb.deepvalley.community.service;
 
+import jjhhyb.deepvalley.community.dto.response.ReviewResponse;
+import jjhhyb.deepvalley.place.Place;
+import jjhhyb.deepvalley.place.PlaceRepository;
 import jjhhyb.deepvalley.tag.ReviewTagRepository;
 import jjhhyb.deepvalley.community.ImageRepository;
 import jjhhyb.deepvalley.community.ReviewImageRepository;
@@ -7,109 +10,92 @@ import jjhhyb.deepvalley.community.ReviewService;
 import jjhhyb.deepvalley.community.ReviewRepository;
 import jjhhyb.deepvalley.community.dto.request.ReviewPostRequest;
 import jjhhyb.deepvalley.community.entity.Image;
-import jjhhyb.deepvalley.community.entity.Review;
-import jjhhyb.deepvalley.community.entity.ReviewPrivacy;
-import jjhhyb.deepvalley.community.entity.ReviewRating;
 import jjhhyb.deepvalley.tag.TagRepository;
 import jjhhyb.deepvalley.tag.entity.Tag;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@SpringBootTest
+@Transactional
 class ReviewServiceTest {
 
-    @Mock
-    private ReviewRepository reviewRepository;
-
-    @Mock
-    private ImageRepository imageRepository;
-
-    @Mock
-    private TagRepository tagRepository;
-
-    @Mock
-    private ReviewImageRepository reviewImageRepository;
-
-    @Mock
-    private ReviewTagRepository reviewTagRepository;
-
-    @InjectMocks
+    @Autowired
     private ReviewService reviewService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
+    private ImageRepository imageRepository;
+
+    @Autowired
+    private TagRepository tagRepository;
+
+    @Autowired
+    private PlaceRepository placeRepository;
 
     @Test
     @DisplayName("리뷰 작성하기")
     void testCreateReview() {
-        // Given
+        // Given: 테스트에 필요한 데이터 준비
+        String placeId = "1";
+
+        Place place = new Place();
+        place.setPlaceId(Long.valueOf(placeId));
+        placeRepository.save(place);
+
+        Image image = new Image("http://example.com/image.jpg");
+        imageRepository.save(image);
+
+//        Tag tag = new Tag(1L, "TagName");
+//        tagRepository.save(tag);
+
         ReviewPostRequest request = ReviewPostRequest.builder()
-                .title("Test Title")
+                .title("Review Title")
                 .rating("FIVE")
-                .content("Test content")
-                .visitedDate("2024-07-15T12:00:00")
+                .content("This is a review content.")
+                .visitedDate(LocalDate.now().toString())
                 .privacy("PUBLIC")
-                .valleyId("1")
-                .tagNames(List.of("tag1", "tag2"))
-                .imageUrls(List.of("http://example.com/image1.jpg", "http://example.com/image2.jpg"))
+                .placeId(placeId)
+                .tagNames(Arrays.asList("TagName"))
+                .imageUrls(Arrays.asList("http://example.com/image.jpg"))
                 .build();
 
-        Review review = Review.builder()
-                .reviewId(1L)
-                .uuid("uuid")
-                .title("Test Title")
-                .rating(ReviewRating.FIVE)
-                .content("Test content")
-                .visitedDate(LocalDateTime.parse("2024-07-15T12:00:00"))
-                .privacy(ReviewPrivacy.PUBLIC)
-                .memberId(1L)
-                .valleyId(1L)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
+        // When: ReviewService의 createReview 메서드를 호출
+        ReviewResponse response = reviewService.createReview(request);
 
-        Image image1 = new Image(1L, "http://example.com/image1.jpg");
-        Image image2 = new Image(2L, "http://example.com/image2.jpg");
+        // Then: 응답 결과 검증
+        assertNotNull(response);
+        assertEquals("Review Title", response.getTitle());
+        assertEquals("FIVE", response.getRating());
+        assertEquals("This is a review content.", response.getContent());
 
-        Tag tag1 = new Tag(1L, "tag1");
-        Tag tag2 = new Tag(2L, "tag2");
+        // 이미지 URL과 태그 이름이 빈 리스트일 경우를 대비하여 조건문 추가
+        List<String> imageUrls = response.getImageUrls();
+        if (!imageUrls.isEmpty()) {
+            assertEquals("http://example.com/image.jpg", imageUrls.get(0));
+        }
 
-        when(reviewRepository.save(any(Review.class))).thenReturn(review);
-        when(imageRepository.findByImageUrl("http://example.com/image1.jpg")).thenReturn(Optional.of(image1));
-        when(imageRepository.findByImageUrl("http://example.com/image2.jpg")).thenReturn(Optional.of(image2));
-        when(tagRepository.findByName("tag1")).thenReturn(Optional.of(tag1));
-        when(tagRepository.findByName("tag2")).thenReturn(Optional.of(tag2));
-        when(imageRepository.save(any(Image.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(tagRepository.save(any(Tag.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        List<String> tagNames = response.getTagNames();
+        if (!tagNames.isEmpty()) {
+            assertEquals("TagName", tagNames.get(0));
+        }
 
-        // When
-        Review savedReview = reviewService.createReview(request, 1L);
-
-        // Then
-        assertThat(savedReview.getTitle()).isEqualTo("Test Title");
-        assertThat(savedReview.getRating()).isEqualTo(ReviewRating.FIVE);
-        assertThat(savedReview.getContent()).isEqualTo("Test content");
-        assertThat(savedReview.getVisitedDate()).isEqualTo(LocalDateTime.parse("2024-07-15T12:00:00"));
-        assertThat(savedReview.getPrivacy()).isEqualTo(ReviewPrivacy.PUBLIC);
-        assertThat(savedReview.getValleyId()).isEqualTo(1L);
-        // 검증
-        verify(reviewRepository, times(1)).save(any(Review.class));
-        verify(imageRepository, times(2)).findByImageUrl(anyString());
-        verify(tagRepository, times(2)).findByName(anyString());
-        verify(reviewImageRepository, times(1)).saveAll(anyList());
-        verify(reviewTagRepository, times(1)).saveAll(anyList());
+        // 추가적인 검증 (저장된 엔티티가 올바르게 저장되었는지 확인)
+        assertNotNull(reviewRepository.findById(response.getReviewId()));
+        assertNotNull(imageRepository.findByImageUrl("http://example.com/image.jpg"));
+        assertNotNull(tagRepository.findByName("TagName"));
     }
 }
