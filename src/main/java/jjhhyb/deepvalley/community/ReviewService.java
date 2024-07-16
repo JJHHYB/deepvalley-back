@@ -32,7 +32,7 @@ public class ReviewService {
     private final ReviewTagRepository reviewTagRepository;
 
     @Transactional
-    public ReviewResponse createReview(ReviewPostRequest request) {
+    public ReviewResponse createReview(ReviewPostRequest request, String userId) {
         // Review 엔티티 생성
         Review review = createReviewEntity(request);
 
@@ -60,7 +60,7 @@ public class ReviewService {
                 .content(request.getContent())
                 .visitedDate(visitedDate)
                 .privacy(ReviewPrivacy.valueOf(request.getPrivacy()))
-                .memberId(getCurrentMemberId())
+//                .memberId(getCurrentMemberId())
                 .placeId(1L) // 현재는 하드코딩된 장소 ID, 필요시 동적으로 업데이트
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
@@ -202,12 +202,6 @@ public class ReviewService {
         review.getReviewTags().addAll(updatedTags);
 
         reviewTagRepository.deleteAll(existingTags);
-    }
-
-    private Long getCurrentMemberId() {
-        // TODO : 현재 사용자의 memberId를 가져오는 메서드 구현 필요
-        // 임시 값
-        return 1L;
     }
 
     @Transactional

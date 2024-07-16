@@ -4,6 +4,8 @@ import jjhhyb.deepvalley.community.dto.request.ReviewPostRequest;
 import jjhhyb.deepvalley.community.dto.response.ReviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,9 +15,12 @@ public class ReviewController {
 
     @PostMapping("/api/review")
     public ReviewResponse createReview(
-            @RequestBody ReviewPostRequest reviewPostRequest
+            @RequestBody ReviewPostRequest reviewPostRequest,
+            Authentication auth
     ) {
-        return reviewService.createReview(reviewPostRequest);
+        // TODO : 인증 정보 추가
+        String userId = auth.getName(); // 인증이 되어 있는 UserID
+        return reviewService.createReview(reviewPostRequest, userId);
     }
 
     @PutMapping("/api/review/{review-id}")
