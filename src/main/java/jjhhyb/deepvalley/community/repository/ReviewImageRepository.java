@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.community;
+package jjhhyb.deepvalley.community.repository;
 
 import jjhhyb.deepvalley.community.entity.ReviewImage;
 import jjhhyb.deepvalley.entityId.ReviewImageId;

@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.community.exception;
+package jjhhyb.deepvalley.community;
 
 public class ReviewNotFoundException extends RuntimeException {
     public ReviewNotFoundException(String message) {

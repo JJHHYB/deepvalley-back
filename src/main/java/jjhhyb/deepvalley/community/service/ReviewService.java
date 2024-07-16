@@ -1,13 +1,13 @@
 package jjhhyb.deepvalley.community.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import jjhhyb.deepvalley.community.ReviewImageRepository;
-import jjhhyb.deepvalley.community.ReviewRepository;
+import jjhhyb.deepvalley.community.repository.ReviewImageRepository;
+import jjhhyb.deepvalley.community.repository.ReviewRepository;
 import jjhhyb.deepvalley.community.dto.response.PlaceImageResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
-import jjhhyb.deepvalley.community.exception.ReviewNotFoundException;
+import jjhhyb.deepvalley.community.ReviewNotFoundException;
 import jjhhyb.deepvalley.place.Place;
 import jjhhyb.deepvalley.place.PlaceRepository;
 import jjhhyb.deepvalley.tag.ReviewTagRepository;

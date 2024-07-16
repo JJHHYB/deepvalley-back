@@ -1,7 +1,7 @@
 package jjhhyb.deepvalley.community.service;
 
-import jjhhyb.deepvalley.community.ImageRepository;
-import jjhhyb.deepvalley.community.ReviewImageRepository;
+import jjhhyb.deepvalley.community.repository.ImageRepository;
+import jjhhyb.deepvalley.community.repository.ReviewImageRepository;
 import jjhhyb.deepvalley.community.entity.Image;
 import jjhhyb.deepvalley.community.entity.Review;
 import jjhhyb.deepvalley.community.entity.ReviewImage;

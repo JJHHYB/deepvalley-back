@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.community;
+package jjhhyb.deepvalley.community.repository;
 
 import jjhhyb.deepvalley.community.entity.Review;
 import org.springframework.data.jpa.repository.JpaRepository;

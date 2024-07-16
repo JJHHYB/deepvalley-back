@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.community;
+package jjhhyb.deepvalley.community.repository;
 
 import jjhhyb.deepvalley.community.entity.Image;
 import org.springframework.data.jpa.repository.JpaRepository;
