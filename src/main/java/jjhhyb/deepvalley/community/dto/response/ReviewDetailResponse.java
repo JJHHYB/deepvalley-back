@@ -1,10 +1,12 @@
 package jjhhyb.deepvalley.community.dto.response;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
+@Builder
 public class ReviewDetailResponse {
     private String reviewId;
     private String title;
@@ -17,5 +19,5 @@ public class ReviewDetailResponse {
     private List<String> tagNames;
     private List<String> imageUrls;
     private String valleyName;
-    private String valleyId;
+    private String placeId;
 }

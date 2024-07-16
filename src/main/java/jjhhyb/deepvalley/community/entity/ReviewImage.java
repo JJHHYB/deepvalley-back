@@ -8,7 +8,7 @@ import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
+@Data
 @Entity
 @Builder
 public class ReviewImage {

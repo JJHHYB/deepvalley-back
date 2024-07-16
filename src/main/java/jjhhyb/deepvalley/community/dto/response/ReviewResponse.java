@@ -1,13 +1,10 @@
 package jjhhyb.deepvalley.community.dto.response;
 
-import jjhhyb.deepvalley.community.entity.Image;
 import jjhhyb.deepvalley.community.entity.Review;
-import jjhhyb.deepvalley.tag.entity.Tag;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +36,7 @@ public class ReviewResponse {
                 .visitedDate(review.getVisitedDate())
                 .privacy(review.getPrivacy().name())
                 .memberId(review.getMemberId())
-                .placeId(review.getPlaceId())
+                .placeId(review.getPlace().getPlaceId())
                 .createdDate(review.getCreatedDate())
                 .updatedDate(review.getUpdatedDate())
                 .imageUrls(review.getReviewImages().stream()

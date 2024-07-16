@@ -1,6 +1,7 @@
 package jjhhyb.deepvalley.community.entity;
 
 import jakarta.persistence.*;
+import jjhhyb.deepvalley.place.Place;
 import jjhhyb.deepvalley.tag.entity.ReviewTag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,8 +35,11 @@ public class Review {
     @Column(name = "member_id")
     private Long memberId;
 
-    @Column(name = "place_id")
-    private Long placeId;
+//    @Column(name = "place_id")
+//    private Long placeId;
+    @ManyToOne(fetch = FetchType.LAZY) // 관계 설정
+    @JoinColumn(name = "place_id")
+    private Place place;
 
     @CreatedDate
     private LocalDateTime createdDate;
