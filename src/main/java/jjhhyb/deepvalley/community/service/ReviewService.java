@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -44,8 +45,11 @@ public class ReviewService {
         Member member = memberRepository.findByLoginEmail(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+        // Place 엔티티 생성 (테스트 데이터를 사용)
+        Place place = createPlaceWithRandomData();
+
         // Review 엔티티 생성
-        Review review = createReviewEntity(request, member);
+        Review review = createReviewEntity(request, member, place);
 
         // 생성한 Review 엔티티 데이터베이스에 저장
         Review savedReview = reviewRepository.save(review);
@@ -164,11 +168,11 @@ public class ReviewService {
     }
 
     // 리뷰 엔티티 생성
-    private Review createReviewEntity(ReviewPostRequest request, Member member) {
+    private Review createReviewEntity(ReviewPostRequest request, Member member, Place place) {
         LocalDate visitedDate = parseVisitedDate(request.getVisitedDate());
 
         // Place 엔티티를 ID로 조회
-        Place place = placeRepository.findById(Long.valueOf(request.getPlaceId()))
+        place = placeRepository.findById(Long.valueOf(request.getPlaceId()))
                 .orElseThrow(() -> new IllegalArgumentException("Invalid place ID"));
 
         return Review.builder()
@@ -236,4 +240,24 @@ public class ReviewService {
                 .placeId(String.valueOf(review.getPlace().getPlaceId())) // Place 엔터티의 placeId를 설정
                 .build();
     }
+
+    /*
+        Place에 테스트 데이터를 임의로 생성
+    */
+    @Transactional
+    public Place createPlaceWithRandomData() {
+        Place place = new Place();
+        place.setName("Test Place");
+        place.setUuid(UUID.randomUUID().toString());
+        place.setAddress("123 Test St, Test City, Test Country");
+        place.setRegion("Test Region");
+        place.setContent("This is a test place.");
+        place.setLatitude(BigDecimal.valueOf(37.7749)); // Example latitude
+        place.setLongitude(BigDecimal.valueOf(-122.4194)); // Example longitude
+        place.setCreatedDate(LocalDateTime.now());
+        place.setUpdatedDate(LocalDateTime.now());
+
+        return placeRepository.save(place);
+    }
+
 }
