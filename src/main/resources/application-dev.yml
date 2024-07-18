@@ -14,7 +14,3 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create
-
-jwt:
-  secretkey: Y2CwQ0L1K5z8X2V7n6G7F3p1M9H4J6T8b3N0W5z7Y6V4gJ2wB8P1K9Q3L5T7X6Z0n3R7D
-  expiretime: 3600000
