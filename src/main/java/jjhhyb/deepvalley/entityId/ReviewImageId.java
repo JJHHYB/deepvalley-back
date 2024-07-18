@@ -3,6 +3,7 @@ package jjhhyb.deepvalley.entityId;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
@@ -10,6 +11,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @EqualsAndHashCode
 @Embeddable
+@Getter
 public class ReviewImageId implements Serializable {
     @Column(name = "REVIEW_ID")
     private Long reviewId;

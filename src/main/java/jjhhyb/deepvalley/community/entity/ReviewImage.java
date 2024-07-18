@@ -1,30 +1,28 @@
 package jjhhyb.deepvalley.community.entity;
 
 import jakarta.persistence.*;
+import jjhhyb.deepvalley.community.entity.Review;
+import jjhhyb.deepvalley.community.entity.Image;
 import jjhhyb.deepvalley.entityId.ReviewImageId;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Entity
+@Builder
 public class ReviewImage {
 
     @EmbeddedId
     private ReviewImageId id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("reviewId")
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
-    private Review reviewId;
+    private Review review;
 
-    @MapsId("imageId")
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("imageId")
     @JoinColumn(name = "image_id")
-    private Image imageId;
+    private Image image;
 }

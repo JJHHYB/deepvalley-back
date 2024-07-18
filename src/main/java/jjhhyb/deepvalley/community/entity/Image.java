@@ -19,4 +19,8 @@ public class Image {
     private Long imageId;
 
     private String imageUrl;
+
+    public Image(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }
