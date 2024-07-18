@@ -19,7 +19,7 @@ import java.util.List;
 public class Place {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long placeId;
 
     private String name;
@@ -42,7 +42,6 @@ public class Place {
     @LastModifiedDate
     private LocalDateTime updatedDate;
 
-    @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PlaceTag> placeTags;
-
+//    @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<PlaceTag> placeTags;
 }

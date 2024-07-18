@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 @Builder
 public class ReviewDetailResponse {
     private String reviewId;
+    private String uuid;
     private String title;
     private String rating;
     private String content;
@@ -25,16 +26,16 @@ public class ReviewDetailResponse {
     private List<String> imageUrls;
     private List<String> tagNames;
 
-
     public static ReviewDetailResponse from(Review review) {
         return ReviewDetailResponse.builder()
                 .reviewId(String.valueOf(review.getReviewId()))
+                .uuid(String.valueOf(review.getUuid()))
                 .title(review.getTitle())
                 .rating(review.getRating().name())
                 .content(review.getContent())
                 .visitedDate(String.valueOf(review.getVisitedDate()))
                 .privacy(review.getPrivacy().name())
-                .memberId(String.valueOf(review.getMemberId()))
+                .memberId(String.valueOf(review.getMember().getMemberId()))
                 .placeId(String.valueOf(review.getPlace().getPlaceId()))
                 .valleyName(review.getPlace().getName())
                 .createdDate(String.valueOf(review.getCreatedDate()))

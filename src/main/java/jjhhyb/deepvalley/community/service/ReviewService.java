@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -48,11 +47,8 @@ public class ReviewService {
         // userId를 이용하여 Member 엔티티 조회
         Member member = findMemberByUserId(userId);
 
-        // Place 엔티티 생성 (테스트 데이터를 사용)
-        Place place = createPlaceWithRandomData();
-
         // Review 엔티티 생성
-        Review review = createReviewEntity(request, member, place);
+        Review review = createReviewEntity(request, member);
 
         // 생성한 Review 엔티티 데이터베이스에 저장
         Review savedReview = reviewRepository.save(review);
@@ -70,7 +66,7 @@ public class ReviewService {
 
     // 리뷰 업데이트
     @Transactional
-    public ReviewDetailResponse updateReview(Long reviewId, ReviewPostRequest request, String userId) {
+    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, String userId) {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
 
@@ -93,7 +89,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public void deleteReview(Long reviewId, String userId) {
+    public void deleteReview(String reviewId, String userId) {
         // 리뷰 존재 여부 및 작성자 확인
         Review review = validateReviewOwner(reviewId, userId);
 
@@ -110,9 +106,9 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public List<PlaceImageResponse> searchReviewImage(Long placeId) {
+    public List<PlaceImageResponse> searchReviewImage(String placeId) {
         // 리뷰를 통해 해당 장소에 대한 모든 리뷰를 조회합니다.
-        List<Review> reviews = reviewRepository.findByPlace_PlaceId(placeId);
+        List<Review> reviews = reviewRepository.findAllByPlace_Uuid(placeId);
 
         // 각 리뷰에 대한 이미지 URL을 가져와서 PlaceImageResponse 객체를 생성
         return reviews.stream()
@@ -126,9 +122,9 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewsResponse getPlaceReviews(Long placeId) {
+    public ReviewsResponse getPlaceReviews(String placeId) {
         // 데이터베이스에서 해당 계곡(장소)의 리뷰 목록을 조회
-        List<Review> reviews = reviewRepository.findByPlace_PlaceId(placeId);
+        List<Review> reviews = reviewRepository.findAllByPlace_Uuid(placeId);
 
         // Review 엔터티를 ReviewResponse로 변환
         List<ReviewDetailResponse> reviewDetailResponses = reviews.stream()
@@ -143,12 +139,12 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewDetailResponse getReviewDetail(Long reviewId) {
+    public ReviewDetailResponse getReviewDetail(String reviewId) {
         // 데이터베이스에서 리뷰를 ID로 조회
-        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
+//        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
 
         // 리뷰가 존재하지 않으면 예외 처리
-        Review review = reviewRepository.findById(reviewId)
+        Review review = reviewRepository.findByUuid(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND));
 
         // Review 엔터티를 ReviewDetailResponse로 변환
@@ -162,25 +158,25 @@ public class ReviewService {
     }
 
     // 리뷰 존재 여부 및 작성자 확인
-    private Review validateReviewOwner(Long reviewId, String userId) {
+    private Review validateReviewOwner(String reviewId, String userId) {
         // 리뷰 존재 여부 확인
-        Review review = reviewRepository.findById(reviewId)
+        Review review = reviewRepository.findByUuid(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException(REVIEW_NOT_FOUND + " with id: " + reviewId));
         // userId를 이용하여 Member 엔티티 조회
         Member member = findMemberByUserId(userId);
         // 작성자 검증
-        if (!review.getMemberId().equals(member.getMemberId())) {
+        if (!review.getMember().getMemberId().equals(member.getMemberId())) {
             throw new IllegalArgumentException(NOT_USER_REVIEW);
         }
         return review;
     }
 
     // 리뷰 엔티티 생성
-    private Review createReviewEntity(ReviewPostRequest request, Member member, Place place) {
+    private Review createReviewEntity(ReviewPostRequest request, Member member) {
         LocalDate visitedDate = parseVisitedDate(request.getVisitedDate());
 
         // Place 엔티티를 ID로 조회
-        place = placeRepository.findById(Long.valueOf(request.getPlaceId()))
+        Place place = placeRepository.findByUuid(request.getPlaceId())
                 .orElseThrow(() -> new IllegalArgumentException(INVALID_PLACE_ID));
 
         return Review.builder()
@@ -190,7 +186,7 @@ public class ReviewService {
                 .content(request.getContent())
                 .visitedDate(visitedDate)
                 .privacy(ReviewPrivacy.valueOf(request.getPrivacy()))
-                .memberId(member.getMemberId())
+                .member(member)
                 .place(place)
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
@@ -225,25 +221,6 @@ public class ReviewService {
         review.setVisitedDate(parseVisitedDate(request.getVisitedDate()));
         review.setPrivacy(ReviewPrivacy.valueOf(request.getPrivacy()));
         review.setUpdatedDate(LocalDateTime.now());
-    }
-
-    /*
-        Place에 테스트 데이터를 임의로 생성
-    */
-    @Transactional
-    public Place createPlaceWithRandomData() {
-        Place place = new Place();
-        place.setName("Test Place");
-        place.setUuid(UUID.randomUUID().toString());
-        place.setAddress("123 Test St, Test City, Test Country");
-        place.setRegion("Test Region");
-        place.setContent("This is a test place.");
-        place.setLatitude(BigDecimal.valueOf(37.7749)); // Example latitude
-        place.setLongitude(BigDecimal.valueOf(-122.4194)); // Example longitude
-        place.setCreatedDate(LocalDateTime.now());
-        place.setUpdatedDate(LocalDateTime.now());
-
-        return placeRepository.save(place);
     }
 
 }

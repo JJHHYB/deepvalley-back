@@ -3,6 +3,7 @@ package jjhhyb.deepvalley.community.entity;
 import jakarta.persistence.*;
 import jjhhyb.deepvalley.place.Place;
 import jjhhyb.deepvalley.tag.entity.ReviewTag;
+import jjhhyb.deepvalley.user.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,12 +33,11 @@ public class Review {
     private LocalDate visitedDate;
     private ReviewPrivacy privacy;
 
-    @Column(name = "member_id")
-    private Long memberId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
-//    @Column(name = "place_id")
-//    private Long placeId;
-    @ManyToOne(fetch = FetchType.LAZY) // 관계 설정
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
     private Place place;
 

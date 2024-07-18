@@ -28,7 +28,7 @@ public class ReviewController {
 
     @PutMapping("/api/review/{review-id}")
     public ReviewDetailResponse updateReview(
-            @PathVariable("review-id") Long reviewId,
+            @PathVariable("review-id") String reviewId,
             @RequestBody ReviewPostRequest reviewPostRequest,
             Authentication auth
     ) {
@@ -37,8 +37,8 @@ public class ReviewController {
     }
 
     @DeleteMapping("/api/review/{review-id}")
-    public ResponseEntity<Long> deleteReview(
-            @PathVariable("review-id") Long reviewId,
+    public ResponseEntity<String> deleteReview(
+            @PathVariable("review-id") String reviewId,
             Authentication auth
     ) {
         String userId = auth.getName(); // 인증이 되어 있는 UserID
@@ -48,21 +48,21 @@ public class ReviewController {
 
     @GetMapping("/api/valley/{valley-id}/image")
     public List<PlaceImageResponse> searchReviewImage(
-            @PathVariable("valley-id") Long placeId
+            @PathVariable("valley-id") String placeId
     ){
         return reviewService.searchReviewImage(placeId);
     }
 
     @GetMapping("/api/valley/{valley-id}/review")
     public ReviewsResponse getPlaceReviews(
-            @PathVariable("valley-id") Long placeId
+            @PathVariable("valley-id") String placeId
     ) {
         return reviewService.getPlaceReviews(placeId);
     }
 
     @GetMapping("/api/review/{review-id}/detail")
     public ReviewDetailResponse getReviewDetail(
-            @PathVariable("review-id") Long reviewId
+            @PathVariable("review-id") String reviewId
     ) {
         return reviewService.getReviewDetail(reviewId);
     }

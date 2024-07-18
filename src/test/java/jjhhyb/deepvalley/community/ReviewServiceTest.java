@@ -92,7 +92,7 @@ public class ReviewServiceTest {
                 .content(request.getContent())
                 .visitedDate(LocalDate.parse(request.getVisitedDate()))
                 .privacy(ReviewPrivacy.PUBLIC)
-                .memberId(member.getMemberId())
+                .member(member)
                 .place(place)
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
@@ -136,7 +136,7 @@ public class ReviewServiceTest {
     void updateReviewTest() {
 
         // Given
-        Long reviewId = 1L;
+        String reviewId = "1L";
         String userId = "test@example.com";
         ReviewPostRequest request = ReviewPostRequest.builder()
                 .title("Update Title")
@@ -150,13 +150,13 @@ public class ReviewServiceTest {
         member.setMemberId(1L);
 
         Review review = Review.builder()
-                .reviewId(reviewId)
+                .uuid(reviewId)
                 .title("Test Title")
                 .rating(ReviewRating.FIVE)
                 .content("Test Content")
                 .visitedDate(LocalDate.now())
                 .privacy(ReviewPrivacy.PUBLIC)
-                .memberId(member.getMemberId())
+                .member(member)
                 .place(new Place())
                 .reviewImages(new ArrayList<>())
                 .reviewTags(new ArrayList<>())
@@ -165,7 +165,7 @@ public class ReviewServiceTest {
                 .build();
 
         when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(member));
-        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+//        when(reviewRepository.findByUuid(reviewId)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         when(reviewImageService.processImages(anyList(), any(Review.class))).thenReturn(Collections.emptyList());
         when(reviewTagService.processTags(anyList(), any(Review.class))).thenReturn(Collections.emptyList());
@@ -189,26 +189,26 @@ public class ReviewServiceTest {
     @DisplayName("[Delete] 사용자 리뷰 삭제")
     void deleteReviewTest() {
         // Given
-        Long reviewId = 1L;
+        String reviewId = "1L";
         String userId = "test@example.com";
 
         Member member = new Member();
         member.setMemberId(1L);
 
         Review review = Review.builder()
-                .reviewId(reviewId)
+                .uuid(reviewId)
                 .title("Test Title")
                 .rating(ReviewRating.FIVE)
                 .content("Test Content")
                 .visitedDate(LocalDate.now())
                 .privacy(ReviewPrivacy.PUBLIC)
-                .memberId(member.getMemberId())
+                .member(member)
                 .place(new Place())
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
                 .build();
 
-        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+//        when(reviewRepository.findByUuid(reviewId)).thenReturn(Optional.of(review));
         when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(member));
 
         // When
@@ -227,13 +227,13 @@ public class ReviewServiceTest {
     @DisplayName("[Get] 장소에 대한 사진 리스트 조회")
     void searchReviewImageTest() {
         // Given
-        Long placeId = 1L;
+        String placeId = "1L";
         Review review = new Review();
         review.setReviewId(1L);
         ReviewImage reviewImage = new ReviewImage();
         reviewImage.setImage(new Image("http://example.com/image.jpg"));
 
-        when(reviewRepository.findByPlace_PlaceId(placeId)).thenReturn(Collections.singletonList(review));
+        when(reviewRepository.findAllByPlace_Uuid(placeId)).thenReturn(Collections.singletonList(review));
         when(reviewImageRepository.findByReview_ReviewId(review.getReviewId())).thenReturn(Collections.singletonList(reviewImage));
 
         // When
@@ -251,7 +251,8 @@ public class ReviewServiceTest {
     @DisplayName("[Get] 장소에 대한 리뷰 리스트 조회")
     void getPlaceReviewsTest() {
         // Given
-        Long placeId = 1L;
+        String placeId = "1L";
+        Member member = new Member();
         Review review = Review.builder()
                 .reviewId(1L)
                 .title("Test Title")
@@ -259,7 +260,7 @@ public class ReviewServiceTest {
                 .content("Test Content")
                 .visitedDate(LocalDate.now())
                 .privacy(ReviewPrivacy.PUBLIC)
-                .memberId(1L)
+                .member(member)
                 .place(new Place())
                 .reviewImages(new ArrayList<>())
                 .reviewTags(new ArrayList<>())
@@ -268,7 +269,7 @@ public class ReviewServiceTest {
                 .build();
 
         // Mockito 설정
-        when(reviewRepository.findByPlace_PlaceId(placeId)).thenReturn(Collections.singletonList(review));
+        when(reviewRepository.findAllByPlace_Uuid(placeId)).thenReturn(Collections.singletonList(review));
 
         // When
         ReviewsResponse response = reviewService.getPlaceReviews(placeId);
@@ -289,7 +290,8 @@ public class ReviewServiceTest {
     @DisplayName("[Get] 리뷰 상세 조회")
     void getReviewDetailTest() {
         // Given
-        Long reviewId = 1L;
+        String reviewId = "1L";
+        Member member = new Member();
         Review review = Review.builder()
                 .reviewId(1L)
                 .title("Test Title")
@@ -297,7 +299,7 @@ public class ReviewServiceTest {
                 .content("Test Content")
                 .visitedDate(LocalDate.now())
                 .privacy(ReviewPrivacy.PUBLIC)
-                .memberId(1L)
+                .member(member)
                 .place(new Place())
                 .reviewImages(new ArrayList<>())
                 .reviewTags(new ArrayList<>())
@@ -305,7 +307,7 @@ public class ReviewServiceTest {
                 .updatedDate(LocalDateTime.now())
                 .build();
 
-        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+//        when(reviewRepository.findByUuidId(reviewId)).thenReturn(Optional.of(reviewId));
 
         // When
         ReviewDetailResponse response = reviewService.getReviewDetail(reviewId);
