@@ -6,5 +6,5 @@ import java.util.List;
 
 @Data
 public class ReviewsResponse {
-    private List<ReviewResponse> reviews;
+    private List<ReviewDetailResponse> reviews;
 }

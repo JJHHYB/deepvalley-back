@@ -3,7 +3,6 @@ package jjhhyb.deepvalley.community;
 import jjhhyb.deepvalley.community.dto.request.ReviewPostRequest;
 import jjhhyb.deepvalley.community.dto.response.PlaceImageResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
-import jjhhyb.deepvalley.community.dto.response.ReviewResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
 import jjhhyb.deepvalley.community.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/api/review")
-    public ReviewResponse createReview(
+    public ReviewDetailResponse createReview(
             @RequestBody ReviewPostRequest reviewPostRequest,
             Authentication auth
     ) {
@@ -28,7 +27,7 @@ public class ReviewController {
     }
 
     @PutMapping("/api/review/{review-id}")
-    public ReviewResponse updateReview(
+    public ReviewDetailResponse updateReview(
             @PathVariable("review-id") Long reviewId,
             @RequestBody ReviewPostRequest reviewPostRequest,
             Authentication auth

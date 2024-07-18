@@ -3,7 +3,6 @@ package jjhhyb.deepvalley.community;
 import jjhhyb.deepvalley.community.dto.request.ReviewPostRequest;
 import jjhhyb.deepvalley.community.dto.response.PlaceImageResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
-import jjhhyb.deepvalley.community.dto.response.ReviewResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
 import jjhhyb.deepvalley.community.entity.*;
 import jjhhyb.deepvalley.community.repository.ReviewImageRepository;
@@ -113,7 +112,7 @@ public class ReviewServiceTest {
 
         // When
         // ReviewService의 createReview 메서드를 호출하여 실제 리뷰 생성 작업 수행
-        ReviewResponse response = reviewService.createReview(request, userId);
+        ReviewDetailResponse response = reviewService.createReview(request, userId);
 
         // Log results
         log.info("Created ReviewResponse: {}", response);
@@ -172,7 +171,7 @@ public class ReviewServiceTest {
         when(reviewTagService.processTags(anyList(), any(Review.class))).thenReturn(Collections.emptyList());
 
         // When
-        ReviewResponse response = reviewService.updateReview(reviewId, request, userId);
+        ReviewDetailResponse response = reviewService.updateReview(reviewId, request, userId);
 
         // Log results
         log.info("ReviewResponse: {}", response);
@@ -281,9 +280,9 @@ public class ReviewServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getReviews()).hasSize(1);
         // 추가 검증: 응답의 리뷰 목록에서 리뷰의 제목과 평점도 검증
-        ReviewResponse reviewResponse = response.getReviews().get(0);
-        assertThat(reviewResponse.getTitle()).isEqualTo(review.getTitle());
-        assertThat(reviewResponse.getRating()).isEqualTo(review.getRating().name());
+        ReviewDetailResponse reviewDetailResponse = response.getReviews().get(0);
+        assertThat(reviewDetailResponse.getTitle()).isEqualTo(review.getTitle());
+        assertThat(reviewDetailResponse.getRating()).isEqualTo(review.getRating().name());
     }
 
     @Test

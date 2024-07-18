@@ -5,7 +5,6 @@ import jjhhyb.deepvalley.community.repository.ReviewImageRepository;
 import jjhhyb.deepvalley.community.repository.ReviewRepository;
 import jjhhyb.deepvalley.community.dto.response.PlaceImageResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
-import jjhhyb.deepvalley.community.dto.response.ReviewResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
 import jjhhyb.deepvalley.community.ReviewNotFoundException;
 import jjhhyb.deepvalley.place.Place;
@@ -39,11 +38,15 @@ public class ReviewService {
     private final MemberRepository memberRepository;
     private final PlaceRepository placeRepository;
 
+    private static final String USER_NOT_FOUND = "사용자를 찾을 수 없습니다.";
+    private static final String REVIEW_NOT_FOUND = "리뷰를 찾을 수 없습니다.";
+    private static final String INVALID_PLACE_ID = "유효하지 않은 장소 ID입니다.";
+    private static final String INVALID_DATE_FORMAT = "유효하지 않은 날짜 형식 : ";
+    private static final String NOT_USER_REVIEW = "사용자가 작성한 리뷰가 아닙니다.";
     @Transactional
-    public ReviewResponse createReview(ReviewPostRequest request, String userId) {
+    public ReviewDetailResponse createReview(ReviewPostRequest request, String userId) {
         // userId를 이용하여 Member 엔티티 조회
-        Member member = memberRepository.findByLoginEmail(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Member member = findMemberByUserId(userId);
 
         // Place 엔티티 생성 (테스트 데이터를 사용)
         Place place = createPlaceWithRandomData();
@@ -62,12 +65,12 @@ public class ReviewService {
         updateReviewWithImagesAndTags(savedReview, reviewImages, reviewTags);
 
         // 응답 객체로 변환 후 반환
-        return ReviewResponse.from(savedReview);
+        return ReviewDetailResponse.from(savedReview);
     }
 
     // 리뷰 업데이트
     @Transactional
-    public ReviewResponse updateReview(Long reviewId, ReviewPostRequest request, String userId) {
+    public ReviewDetailResponse updateReview(Long reviewId, ReviewPostRequest request, String userId) {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
 
@@ -82,9 +85,11 @@ public class ReviewService {
         reviewImageService.updateReviewImages(updateReview, updatedReviewImages);
         reviewTagService.updateReviewTags(updateReview, updatedReviewTags);
 
+        // 업데이트된 리뷰 저장
         reviewRepository.save(updateReview);
 
-        return ReviewResponse.from(updateReview);
+        // 응답 객체로 변환 후 반환
+        return ReviewDetailResponse.from(updateReview);
     }
 
     @Transactional
@@ -126,13 +131,13 @@ public class ReviewService {
         List<Review> reviews = reviewRepository.findByPlace_PlaceId(placeId);
 
         // Review 엔터티를 ReviewResponse로 변환
-        List<ReviewResponse> reviewResponses = reviews.stream()
-                .map(ReviewResponse::from)
+        List<ReviewDetailResponse> reviewDetailResponses = reviews.stream()
+                .map(ReviewDetailResponse::from)
                 .collect(Collectors.toList());
 
         // ReviewsResponse 객체에 변환된 리뷰 목록을 설정
         ReviewsResponse reviewsResponse = new ReviewsResponse();
-        reviewsResponse.setReviews(reviewResponses);
+        reviewsResponse.setReviews(reviewDetailResponses);
 
         return reviewsResponse;
     }
@@ -143,27 +148,30 @@ public class ReviewService {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
 
         // 리뷰가 존재하지 않으면 예외 처리
-        Review review = optionalReview.orElseThrow(() -> new ReviewNotFoundException("Review not found"));
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND));
 
         // Review 엔터티를 ReviewDetailResponse로 변환
-        return convertToReviewDetailResponse(review);
+        return ReviewDetailResponse.from(review);
+    }
+
+    // userId를 이용하여 Member 엔티티 조회
+    private Member findMemberByUserId(String userId) {
+        return memberRepository.findByLoginEmail(userId)
+                .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
     }
 
     // 리뷰 존재 여부 및 작성자 확인
     private Review validateReviewOwner(Long reviewId, String userId) {
         // 리뷰 존재 여부 확인
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new EntityNotFoundException("Review not found with id: " + reviewId));
-
+                .orElseThrow(() -> new EntityNotFoundException(REVIEW_NOT_FOUND + " with id: " + reviewId));
         // userId를 이용하여 Member 엔티티 조회
-        Member member = memberRepository.findByLoginEmail(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
+        Member member = findMemberByUserId(userId);
         // 작성자 검증
         if (!review.getMemberId().equals(member.getMemberId())) {
-            throw new IllegalArgumentException("사용자가 작성한 리뷰가 아닙니다.");
+            throw new IllegalArgumentException(NOT_USER_REVIEW);
         }
-
         return review;
     }
 
@@ -173,7 +181,7 @@ public class ReviewService {
 
         // Place 엔티티를 ID로 조회
         place = placeRepository.findById(Long.valueOf(request.getPlaceId()))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid place ID"));
+                .orElseThrow(() -> new IllegalArgumentException(INVALID_PLACE_ID));
 
         return Review.builder()
                 .uuid(UUID.randomUUID().toString())
@@ -197,7 +205,7 @@ public class ReviewService {
         try {
             return LocalDate.parse(visitedDateStr);
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid date format for visitedDate: " + visitedDateStr, e);
+            throw new IllegalArgumentException(INVALID_DATE_FORMAT + visitedDateStr, e);
         }
     }
 
@@ -217,28 +225,6 @@ public class ReviewService {
         review.setVisitedDate(parseVisitedDate(request.getVisitedDate()));
         review.setPrivacy(ReviewPrivacy.valueOf(request.getPrivacy()));
         review.setUpdatedDate(LocalDateTime.now());
-    }
-
-    // Review 엔터티를 ReviewDetailResponse로 변환하는 메서드
-    private ReviewDetailResponse convertToReviewDetailResponse(Review review) {
-        return ReviewDetailResponse.builder()
-                .reviewId(String.valueOf(review.getReviewId()))
-                .title(review.getTitle())
-                .rating(review.getRating().name())
-                .content(review.getContent())
-                .visitedDate(review.getVisitedDate().toString())
-                .privacy(review.getPrivacy().name())
-                .createdDate(review.getCreatedDate().toString())
-                .updatedDate(review.getUpdatedDate().toString())
-                .tagNames(review.getReviewTags().stream()
-                        .map(reviewTag -> reviewTag.getTag().getName())
-                        .collect(Collectors.toList()))
-                .imageUrls(review.getReviewImages().stream()
-                        .map(reviewImage -> reviewImage.getImage().getImageUrl())
-                        .collect(Collectors.toList()))
-                .valleyName(review.getPlace().getName()) // Place 엔터티의 name을 valleyName으로 설정
-                .placeId(String.valueOf(review.getPlace().getPlaceId())) // Place 엔터티의 placeId를 설정
-                .build();
     }
 
     /*
