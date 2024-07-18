@@ -249,7 +249,7 @@ public class ReviewServiceTest {
     }
 
     @Test
-    @DisplayName("[GET] 장소에 대한 리뷰 리스트 조회")
+    @DisplayName("[Get] 장소에 대한 리뷰 리스트 조회")
     void getPlaceReviewsTest() {
         // Given
         Long placeId = 1L;
@@ -287,7 +287,7 @@ public class ReviewServiceTest {
     }
 
     @Test
-    @DisplayName("[GET] 리뷰 상세 조회")
+    @DisplayName("[Get] 리뷰 상세 조회")
     void getReviewDetailTest() {
         // Given
         Long reviewId = 1L;
