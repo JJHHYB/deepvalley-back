@@ -1,6 +1,7 @@
 package jjhhyb.deepvalley.community.repository;
 
 import jjhhyb.deepvalley.community.entity.Review;
+import jjhhyb.deepvalley.community.entity.ReviewRating;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

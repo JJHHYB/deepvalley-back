@@ -28,9 +28,11 @@ public class Review {
 
     private String uuid;
     private String title;
+    @Enumerated(EnumType.STRING)
     private ReviewRating rating;
     private String content;
     private LocalDate visitedDate;
+    @Enumerated(EnumType.STRING)
     private ReviewPrivacy privacy;
 
     @ManyToOne(fetch = FetchType.LAZY)
