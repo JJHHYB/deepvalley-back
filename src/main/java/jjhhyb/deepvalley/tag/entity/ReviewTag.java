@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Data
@@ -21,13 +20,13 @@ public class ReviewTag {
     @EmbeddedId
     private ReviewTagId id;
 
-    @MapsId("reviewId")
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("reviewId")
     @JoinColumn(name = "review_id")
     private Review review;
 
-    @MapsId("tagId")
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("tagId")
     @JoinColumn(name = "tag_id")
     private Tag tag;
 }

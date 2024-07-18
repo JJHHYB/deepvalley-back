@@ -6,9 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Data
@@ -23,8 +22,12 @@ public class Tag {
     private String name;
 
     @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewTag> reviewTags;
+    private List<ReviewTag> reviewTags = new ArrayList<>();
 
     @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PlaceTag> placeTags;
+    private List<PlaceTag> placeTags = new ArrayList<>();
+
+    public Tag(String name) {
+        this.name = name;
+    }
 }
