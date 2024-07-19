@@ -1,10 +1,9 @@
 package jjhhyb.deepvalley.user.controller;
 
-import jjhhyb.deepvalley.user.auth.JWTUtil;
+import jjhhyb.deepvalley.user.jwt.JWTUtil;
 import jjhhyb.deepvalley.user.dto.*;
 import jjhhyb.deepvalley.user.entity.Member;
 import jjhhyb.deepvalley.user.exception.LoginException;
-import jjhhyb.deepvalley.user.exception.RegisterException;
 import jjhhyb.deepvalley.user.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
