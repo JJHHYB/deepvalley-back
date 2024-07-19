@@ -36,6 +36,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -Pprofile=prod --exclude-task test
 
+      - name: Display current commit
+        run: git log -1
+
+      - name: Save commit hash
+        run: git rev-parse HEAD > commit_hash.txt
+
       # 디렉토리 생성
       - name: Make Directory
         run: mkdir -p deploy
@@ -51,6 +57,10 @@ jobs:
       # script files 복사
       - name: Copy script
         run: cp ./scripts/*.sh ./deploy
+
+      # commit hash 파일 복사
+      - name: Copy commit hash
+        run: cp commit_hash.txt ./deploy
 
       - name: Make zip file
         run: zip -r ./deepvalley.zip ./deploy
