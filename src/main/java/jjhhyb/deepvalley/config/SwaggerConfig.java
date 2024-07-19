@@ -15,8 +15,11 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${swagger.production.url}")
+    @Value("${swagger.production.url}")  //https URL
     private String productionServerUrl;
+
+    @Value("${swagger.development.url}")  //http URL
+    private String developmentServerUrl;
 
     @Bean
     public OpenAPI openAPI() {
@@ -25,9 +28,13 @@ public class SwaggerConfig {
         localServer.setUrl("http://localhost:8080");
         localServer.setDescription("Local server");
 
-        Server productionServer = new Server(); // 운영 서버 설정
+        Server productionServer = new Server(); // 운영 서버 설정(https)
         productionServer.setUrl(productionServerUrl);
         productionServer.setDescription("Production server");
+
+        Server developmentServer = new Server(); // 개발 서버 설정(http)
+        developmentServer.setUrl(developmentServerUrl);
+        developmentServer.setDescription("Development server");
 
         Info info = new Info()
                 .title("DeepValley Server API")
@@ -46,7 +53,7 @@ public class SwaggerConfig {
 
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(localServer, productionServer))
+                .servers(List.of(localServer, productionServer, developmentServer))
                 .components(new Components().addSecuritySchemes("bearerAuth", securityScheme))
                 .addSecurityItem(securityRequirement);
     }
