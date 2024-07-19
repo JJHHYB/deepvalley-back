@@ -34,22 +34,47 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'mysql:mysql-connector-java:8.0.30'
 
+	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+	// OAuth2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
+	// Springdoc OpenAPI
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// Use Log4j2 for logging
+	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+
+	// Optional: SLF4J binding for Log4j 2
+	implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
+
+	// MySQL
 	runtimeOnly 'mysql:mysql-connector-java'
+
+	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	if (profile.equals('dev')) {
 		runtimeOnly 'com.h2database:h2'
+	}
+}
+
+// Exclude conflicting dependencies
+configurations {
+	all {
+		exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+		exclude group: 'ch.qos.logback', module: 'logback-classic'
+		exclude group: 'ch.qos.logback', module: 'logback-core'
 	}
 }
 
