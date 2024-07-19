@@ -29,3 +29,11 @@ oauth:
       auth: https://kauth.kakao.com
       api: https://kapi.kakao.com
 
+server:
+  port: 8080
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-store-password: deepvalley
+    key-store-type: PKCS12
+    key-alias: mysslkey

@@ -53,7 +53,11 @@ public class KakaoLoginService {
         ResponseEntity<KakaoTokenDto> responseEntity = restTemplate.postForEntity(authUrl + "/oauth/token", request, KakaoTokenDto.class);
         log.info("response: {}", responseEntity);
 
-        return responseEntity.getBody();
+        if (responseEntity != null) {
+            return responseEntity.getBody();
+        } else {
+            throw new Exception("getAccessToken(Kakao) failed");
+        }
     }
 
     public KakaoUserInfoDto getUserInfo(String accessToken) throws Exception {
@@ -65,7 +69,11 @@ public class KakaoLoginService {
         ResponseEntity<KakaoUserInfoDto> responseEntity = restTemplate.postForEntity(apiUrl + "/v2/user/me", request, KakaoUserInfoDto.class);
         log.info("response: {}", responseEntity);
 
-        return responseEntity.getBody();
+        if (responseEntity != null) {
+            return responseEntity.getBody();
+        } else {
+            throw new Exception("getUserInfo(Kakao) failed");
+        }
     }
 
     public LoginResponseDto handleLogin(String authorizationCode) throws Exception {
