@@ -42,6 +42,7 @@ public class ReviewService {
     private static final String INVALID_PLACE_ID = "유효하지 않은 장소 ID입니다.";
     private static final String INVALID_DATE_FORMAT = "유효하지 않은 날짜 형식 : ";
     private static final String NOT_USER_REVIEW = "사용자가 작성한 리뷰가 아닙니다.";
+
     @Transactional
     public ReviewDetailResponse createReview(ReviewPostRequest request, String userId) {
         // userId를 이용하여 Member 엔티티 조회
@@ -140,15 +141,38 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public ReviewDetailResponse getReviewDetail(String reviewId) {
-        // 데이터베이스에서 리뷰를 ID로 조회
-//        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
-
         // 리뷰가 존재하지 않으면 예외 처리
         Review review = reviewRepository.findByUuid(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND));
 
         // Review 엔터티를 ReviewDetailResponse로 변환
         return ReviewDetailResponse.from(review);
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewsResponse getSpecificMemberReviews(String loginEmail, String userId) {
+        // loginEmail이 null인지 확인
+        if (loginEmail == null) {
+            throw new IllegalArgumentException(USER_NOT_FOUND);
+        }
+
+        // 요청된 유저와 동일한 유저인지 확인
+        boolean isSameUser = loginEmail.equals(userId);
+
+        // 해당 유저의 모든 리뷰 조회
+        List<Review> reviews = reviewRepository.findAllByMember_loginEmail(loginEmail);
+
+        // 리뷰 공개 범위에 따라 필터링
+        List<ReviewDetailResponse> reviewDetailResponses = reviews.stream()
+                .filter(review -> isSameUser || review.getPrivacy() == ReviewPrivacy.PUBLIC)
+                .map(ReviewDetailResponse::from)
+                .collect(Collectors.toList());
+
+        // ReviewsResponse 객체에 변환된 리뷰 목록을 설정
+        ReviewsResponse reviewsResponse = new ReviewsResponse();
+        reviewsResponse.setReviews(reviewDetailResponses);
+
+        return reviewsResponse;
     }
 
     // userId를 이용하여 Member 엔티티 조회
@@ -222,5 +246,4 @@ public class ReviewService {
         review.setPrivacy(ReviewPrivacy.valueOf(request.getPrivacy()));
         review.setUpdatedDate(LocalDateTime.now());
     }
-
 }

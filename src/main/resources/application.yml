@@ -2,7 +2,7 @@ spring:
   application:
     name: deepvalley
   profiles:
-    active: prod
+    active: dev
 
 logging:
   level:
