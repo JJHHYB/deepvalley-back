@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.user.auth;
+package jjhhyb.deepvalley.user.jwt;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

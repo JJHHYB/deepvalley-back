@@ -21,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +39,7 @@ public class ReviewServiceTest {
 
     private static final Logger log = LoggerFactory.getLogger(ReviewServiceTest.class);
 
-    @Autowired
+    @Mock
     private ReviewRepository reviewRepository;
 
     @Mock
@@ -166,7 +165,6 @@ public class ReviewServiceTest {
                 .build();
 
         when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(member));
-//        when(reviewRepository.findByUuid(reviewId)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         when(reviewImageService.processImages(anyList(), any(Review.class))).thenReturn(Collections.emptyList());
         when(reviewTagService.processTags(anyList(), any(Review.class))).thenReturn(Collections.emptyList());
@@ -209,7 +207,6 @@ public class ReviewServiceTest {
                 .updatedDate(LocalDateTime.now())
                 .build();
 
-//        when(reviewRepository.findByUuid(reviewId)).thenReturn(Optional.of(review));
         when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(member));
 
         // When
@@ -308,8 +305,6 @@ public class ReviewServiceTest {
                 .updatedDate(LocalDateTime.now())
                 .build();
 
-//        when(reviewRepository.findByUuidId(reviewId)).thenReturn(Optional.of(reviewId));
-
         // When
         ReviewDetailResponse response = reviewService.getReviewDetail(reviewId);
 
@@ -318,6 +313,124 @@ public class ReviewServiceTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getReviewId()).isEqualTo(String.valueOf(reviewId));
+        assertThat(response.getReviewId()).isEqualTo(reviewId);
+    }
+
+    @Test
+    @DisplayName("[Get] 특정 유저의 리뷰 목록 조회 - 자신의 리뷰 반환")
+    void getSpecificMemberReviews_OwnReviews() {
+        // Given
+        String loginEmail = "test@example.com";
+        String userId = "test@example.com";
+
+        Member member = new Member();
+        member.setLoginEmail(loginEmail);
+
+        Place place = new Place();
+        place.setPlaceId(1L);
+
+        Review review1 = Review.builder()
+                .uuid(UUID.randomUUID().toString())
+                .title("Review 1")
+                .rating(ReviewRating.FIVE)
+                .content("Content 1")
+                .privacy(ReviewPrivacy.PUBLIC)
+                .member(member)
+                .place(place)
+                .reviewImages(new ArrayList<>())
+                .reviewTags(new ArrayList<>())
+                .build();
+
+        Review review2 = Review.builder()
+                .uuid(UUID.randomUUID().toString())
+                .title("Review 2")
+                .rating(ReviewRating.THREE)
+                .content("Content 2")
+                .privacy(ReviewPrivacy.PRIVATE)
+                .member(member)
+                .place(place)
+                .reviewImages(new ArrayList<>())
+                .reviewTags(new ArrayList<>())
+                .build();
+
+
+        List<Review> reviews = Arrays.asList(review1, review2);
+
+        // Mockito를 사용하여 reviewRepository에서 이메일로 리뷰 목록을 조회할 때, 설정한 리뷰 목록을 반환
+        when(reviewRepository.findAllByMember_loginEmail(loginEmail)).thenReturn(reviews);
+
+        // When
+        // ReviewService의 getSpecificMemberReviews 메서드를 호출하여 리뷰 목록 조회 작업 수행
+        ReviewsResponse response = reviewService.getSpecificMemberReviews(loginEmail, userId);
+
+        // Log results
+        log.info("loginEmail({})에 대한 리뷰 : {}", loginEmail, response.getReviews());
+
+        // Then
+        // 반환된 리뷰 목록이 null이 아닌지 확인
+        assertThat(response).isNotNull();
+        // 반환된 리뷰 목록의 크기가 예상된 값과 일치하는지 확인 (자신의 리뷰이므로 모든 리뷰가 반환됨)
+        assertThat(response.getReviews()).hasSize(2);
+        // 각 리뷰의 내용을 검증
+        assertThat(response.getReviews().get(0).getTitle()).isEqualTo("Review 1");
+        assertThat(response.getReviews().get(0).getContent()).isEqualTo("Content 1");
+        assertThat(response.getReviews().get(1).getTitle()).isEqualTo("Review 2");
+        assertThat(response.getReviews().get(1).getContent()).isEqualTo("Content 2");
+    }
+    @Test
+    @DisplayName("[Get] 특정 유저의 리뷰 목록 조회 - 다른 사용자가 조회할 경우")
+    void getSpecificMemberReviews_OtherUser() {
+        // Given
+        String loginEmail = "test@example.com";
+        String otherUserId = "other@example.com";
+
+        Member member = new Member();
+        member.setLoginEmail(loginEmail);
+
+        Place place = new Place();
+        place.setPlaceId(1L);
+
+        Review review1 = Review.builder()
+                .uuid(UUID.randomUUID().toString())
+                .title("Review 1")
+                .rating(ReviewRating.FIVE)
+                .content("Content 1")
+                .privacy(ReviewPrivacy.PUBLIC)
+                .member(member)
+                .place(place)
+                .reviewImages(new ArrayList<>())
+                .reviewTags(new ArrayList<>())
+                .build();
+
+        Review review2 = Review.builder()
+                .uuid(UUID.randomUUID().toString())
+                .title("Review 2")
+                .rating(ReviewRating.THREE)
+                .content("Content 2")
+                .privacy(ReviewPrivacy.PRIVATE)
+                .member(member)
+                .place(place)
+                .reviewImages(new ArrayList<>())
+                .reviewTags(new ArrayList<>())
+                .build();
+
+        List<Review> reviews = Arrays.asList(review1, review2);
+
+        // Mockito를 사용하여 reviewRepository에서 이메일로 리뷰 목록을 조회할 때, 설정한 리뷰 목록을 반환
+        when(reviewRepository.findAllByMember_loginEmail(loginEmail)).thenReturn(reviews);
+
+        // When
+        // ReviewService의 getSpecificMemberReviews 메서드를 호출하여 리뷰 목록 조회 작업 수행
+        ReviewsResponse responseForOtherUser = reviewService.getSpecificMemberReviews(loginEmail, otherUserId);
+
+        // Log results
+        log.info("loginEmail({})에 대한 리뷰 : {}", loginEmail, responseForOtherUser);
+
+        // Then
+        // 공개된 리뷰만 포함되어 있는지 확인
+        assertThat(responseForOtherUser).isNotNull();
+        assertThat(responseForOtherUser.getReviews()).hasSize(1);
+        assertThat(responseForOtherUser.getReviews().get(0).getTitle()).isEqualTo("Review 1");
+        assertThat(responseForOtherUser.getReviews().get(0).getContent()).isEqualTo("Content 1");
     }
 }

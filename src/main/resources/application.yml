@@ -2,4 +2,38 @@ spring:
   application:
     name: deepvalley
   profiles:
-    active: prod
+    active: dev
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+        security: DEBUG
+        jdbc: DEBUG
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql: trace
+
+jwt:
+  secretkey: Y2CwQ0L1K5z8X2V7n6G7F3p1M9H4J6T8b3N0W5z7Y6V4gJ2wB8P1K9Q3L5T7X6Z0n3R7D
+  expiretime: 3600000
+
+oauth:
+  kakao:
+    client-id: 0254b79556922c41c5f92bfb2ddc63fa
+    redirect-uri: http://localhost:3000/auth
+    url:
+      auth: https://kauth.kakao.com
+      api: https://kapi.kakao.com
+
+server:
+  port: 8080
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-store-password: deepvalley
+    key-store-type: PKCS12
+    key-alias: mysslkey

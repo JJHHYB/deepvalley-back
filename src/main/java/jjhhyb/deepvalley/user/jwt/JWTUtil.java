@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.user.auth;
+package jjhhyb.deepvalley.user.jwt;
 
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;

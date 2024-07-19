@@ -66,4 +66,13 @@ public class ReviewController {
     ) {
         return reviewService.getReviewDetail(reviewId);
     }
+
+    @GetMapping("/api/member/{member-id}/review")
+    public ReviewsResponse getSpecificMemberReviews(
+        @PathVariable("member-id") String loginEmail,
+        Authentication auth
+    ){
+        String userId = auth.getName();
+        return reviewService.getSpecificMemberReviews(loginEmail, userId);
+    }
 }
