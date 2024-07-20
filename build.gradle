@@ -47,12 +47,6 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-	// Use Log4j2 for logging
-	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
-
-	// Optional: SLF4J binding for Log4j 2
-	implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
-
 	// MySQL
 	runtimeOnly 'mysql:mysql-connector-java'
 
@@ -66,15 +60,6 @@ dependencies {
 
 	if (profile.equals('dev')) {
 		runtimeOnly 'com.h2database:h2'
-	}
-}
-
-// Exclude conflicting dependencies
-configurations {
-	all {
-		exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
-		exclude group: 'ch.qos.logback', module: 'logback-classic'
-		exclude group: 'ch.qos.logback', module: 'logback-core'
 	}
 }
 
