@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.user.dto;
+package jjhhyb.deepvalley.user.oauth.provider.kakao;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class PasswordRequestDto {
-    private String oldPassword;
-    private String newPassword;
+public class KakaoAuthDto {
+    private String authorizationCode;
 }

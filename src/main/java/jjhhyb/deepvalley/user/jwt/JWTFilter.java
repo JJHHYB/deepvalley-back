@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.user.auth;
+package jjhhyb.deepvalley.user.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
