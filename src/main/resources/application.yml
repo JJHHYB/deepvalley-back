@@ -35,4 +35,8 @@ swagger:
   development:
     url: http://ec2-13-124-151-228.ap-northeast-2.compute.amazonaws.com:8080
 
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
