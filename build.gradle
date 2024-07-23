@@ -27,10 +27,18 @@ def profile = project.hasProperty('profile') ? project.property('profile') : 'de
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.security:spring-security-messaging'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 	implementation 'org.hibernate.orm:hibernate-spatial'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	runtimeOnly 'mysql:mysql-connector-java:8.0.30'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
@@ -38,11 +46,10 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	if(profile.equals('dev')) {
+	if (profile.equals('dev')) {
 		runtimeOnly 'com.h2database:h2'
 		runtimeOnly 'org.orbisgis:h2gis:2.2.1'
 	}
-
 }
 
 tasks.named('test') {
