@@ -79,7 +79,13 @@ public class MemberService {
 
         if (member.isPresent()) {
             Member memberEntity = member.get();
-            memberEntity.setPassword(passwordRequestDto.getPassword());
+            if (!memberEntity.getPassword().equals(passwordRequestDto.getOldPassword())) {
+                throw new MyProfileException.InvalidPasswordException("Invalid Old Password");
+            }
+            if (memberEntity.getPassword().equals(passwordRequestDto.getNewPassword())){
+                throw new MyProfileException.SamePasswordException("New password is the same as Old password");
+            }
+            memberEntity.setPassword(passwordRequestDto.getNewPassword());
             memberRepository.save(memberEntity);
         } else {
             throw new MyProfileException.ProfileNotFoundException("Member not found with email " + loginEmail);

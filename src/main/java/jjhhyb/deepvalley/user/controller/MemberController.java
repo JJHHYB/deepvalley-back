@@ -126,13 +126,14 @@ public class MemberController {
     @Operation(summary = "비밀번호 변경", description = "현재 로그인한 사용자의 비밀번호를 변경합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
-            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(examples = @ExampleObject( value = "User not found" ))),
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(examples = @ExampleObject( value = "Bad Request" ))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 현재 비밀번호", content = @Content(examples = @ExampleObject( value = "Invalid Old Password" ))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(examples = @ExampleObject( value = "User not found" ))),
+            @ApiResponse(responseCode = "422", description = "서로 같은 비밀번호 설정", content = @Content(examples = @ExampleObject( value = "New password is the same as Old password" ))),
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(examples = @ExampleObject( value = "Internal Server Error" )))
     })
     public ResponseEntity<Void> changePassword(
-            @Parameter(description = "비밀번호 변경 정보", required = true) @RequestBody PasswordRequestDto passwordRequestDto,
-            Authentication auth) {
+            @Parameter(description = "비밀번호 변경 정보", required = true) @RequestBody PasswordRequestDto passwordRequestDto, Authentication auth) {
         memberService.changePassword(passwordRequestDto, auth.getName());
         return ResponseEntity.ok().build();
     }
