@@ -1,5 +1,11 @@
 package jjhhyb.deepvalley.community;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jjhhyb.deepvalley.community.dto.request.ReviewPostRequest;
 import jjhhyb.deepvalley.community.dto.response.PlaceImageResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
@@ -14,10 +20,18 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Review", description = "리뷰 관리 API")
 public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/api/review")
+    @Operation(summary = "리뷰 작성", description = "리뷰를 작성합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 작성 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReviewDetailResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
     public ReviewDetailResponse createReview(
             @RequestBody ReviewPostRequest reviewPostRequest,
             Authentication auth
@@ -27,6 +41,14 @@ public class ReviewController {
     }
 
     @PutMapping("/api/review/{review-id}")
+    @Operation(summary = "리뷰 수정", description = "리뷰를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 수정 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReviewDetailResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+            @ApiResponse(responseCode = "404", description = "리뷰를 찾을 수 없음", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
     public ReviewDetailResponse updateReview(
             @PathVariable("review-id") String reviewId,
             @RequestBody ReviewPostRequest reviewPostRequest,
@@ -37,6 +59,14 @@ public class ReviewController {
     }
 
     @DeleteMapping("/api/review/{review-id}")
+    @Operation(summary = "리뷰 삭제", description = "리뷰를 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 삭제 성공", content = @Content),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+            @ApiResponse(responseCode = "404", description = "리뷰를 찾을 수 없음", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
     public ResponseEntity<String> deleteReview(
             @PathVariable("review-id") String reviewId,
             Authentication auth
@@ -47,13 +77,25 @@ public class ReviewController {
     }
 
     @GetMapping("/api/valley/{valley-id}/image")
+    @Operation(summary = "리뷰 이미지 검색", description = "특정 계곡에 대한 리뷰 이미지를 검색합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 이미지 검색 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PlaceImageResponse.class))),
+            @ApiResponse(responseCode = "404", description = "계곡을 찾을 수 없음", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
     public List<PlaceImageResponse> searchReviewImage(
             @PathVariable("valley-id") String placeId
-    ){
+    ) {
         return reviewService.searchReviewImage(placeId);
     }
 
     @GetMapping("/api/valley/{valley-id}/review")
+    @Operation(summary = "특정 계곡 리뷰 조회", description = "특정 계곡의 리뷰를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 조회 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReviewsResponse.class))),
+            @ApiResponse(responseCode = "404", description = "계곡을 찾을 수 없음", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
     public ReviewsResponse getPlaceReviews(
             @PathVariable("valley-id") String placeId
     ) {
@@ -61,6 +103,12 @@ public class ReviewController {
     }
 
     @GetMapping("/api/review/{review-id}/detail")
+    @Operation(summary = "리뷰 상세 조회", description = "리뷰의 상세 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 상세 조회 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReviewDetailResponse.class))),
+            @ApiResponse(responseCode = "404", description = "리뷰를 찾을 수 없음", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
     public ReviewDetailResponse getReviewDetail(
             @PathVariable("review-id") String reviewId
     ) {
@@ -68,10 +116,17 @@ public class ReviewController {
     }
 
     @GetMapping("/api/member/{member-id}/review")
+    @Operation(summary = "특정 회원의 리뷰 조회", description = "특정 회원의 리뷰를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 리뷰 조회 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReviewsResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+            @ApiResponse(responseCode = "403", description = "접근 권한 없음", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
     public ReviewsResponse getSpecificMemberReviews(
-        @PathVariable("member-id") String loginEmail,
-        Authentication auth
-    ){
+            @PathVariable("member-id") String loginEmail,
+            Authentication auth
+    ) {
         String userId = auth.getName();
         return reviewService.getSpecificMemberReviews(loginEmail, userId);
     }
