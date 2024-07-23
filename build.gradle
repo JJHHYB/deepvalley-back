@@ -30,6 +30,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+	implementation 'org.hibernate.orm:hibernate-spatial'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
@@ -39,6 +40,7 @@ dependencies {
 
 	if(profile.equals('dev')) {
 		runtimeOnly 'com.h2database:h2'
+		runtimeOnly 'org.orbisgis:h2gis:2.2.1'
 	}
 
 }
