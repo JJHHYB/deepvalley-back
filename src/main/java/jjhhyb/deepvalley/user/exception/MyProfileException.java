@@ -22,4 +22,16 @@ public class MyProfileException extends RuntimeException {
             super(message);
         }
     }
+
+    public static class InvalidPasswordException extends MyProfileException {
+        public InvalidPasswordException(String message) {
+            super(message);
+        }
+    }
+
+    public static class SamePasswordException extends MyProfileException {
+        public SamePasswordException(String message) {
+            super(message);
+        }
+    }
 }
