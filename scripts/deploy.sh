@@ -34,3 +34,12 @@ nohup java -Dcloud.aws.s3.bucket=${CLOUD_AWS_S3_BUCKET} \
             -Dcloud.aws.credentials.secretKey=${CLOUD_AWS_CREDENTIALS_SECRET_KEY} \
             -jar $JAR_NAME --spring.profiles.active=prod \
             >> $REPOSITORY/nohup.out 2>&1 &
+
+# 배포 로그 기록
+if [ -f "$REPOSITORY/commit_hash.txt" ]; then
+  echo "> 배포 로그 기록"
+  cat "$REPOSITORY/commit_hash.txt" >> "$REPOSITORY/deploy.log"
+  echo "Deployment completed with commit $(cat "$REPOSITORY/commit_hash.txt")" >> "$REPOSITORY/deploy.log"
+else
+  echo "> commit_hash.txt 파일을 찾을 수 없습니다."
+fi
