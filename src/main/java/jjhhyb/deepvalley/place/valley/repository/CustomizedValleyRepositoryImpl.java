@@ -6,6 +6,7 @@ import jakarta.persistence.TypedQuery;
 import jjhhyb.deepvalley.place.PlaceMapper;
 import jjhhyb.deepvalley.place.PlaceUtil;
 import jjhhyb.deepvalley.place.valley.Valley;
+import jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO;
 import jjhhyb.deepvalley.place.valley.dto.ValleyResponse;
 
 import java.util.*;
@@ -17,9 +18,17 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
 
     @Override
     public List<ValleyResponse> searchValleys(Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset) {
-        StringBuilder queryString = new StringBuilder(
-                "select v " +
-                "from Valley v ");
+        String selectString =
+                "select new jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO(" +
+                        "v.placeId, v.name, v.uuid, v.thumbnail, v.address, v.contact, v.region, v.content, v.location, v.postCount, v.avgRating, " +
+                        "v.openingTime, v.closingTime, v.createdDate, v.updatedDate, null, v.maxDepth, v.avgDepth) " +
+                "from Valley v ";
+        StringBuilder queryString = new StringBuilder(selectString);
+//        if(tagNames.isPresent()) {
+//            queryString.append(selectString.formatted("group_concat(t.name)"));
+//        } else {
+//            queryString.append(selectString.formatted(""));
+//        }
         StringJoiner joiner = new StringJoiner(" AND ");
         Map<String, Object> parameters = new HashMap<>();
 
@@ -29,10 +38,9 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
         });
 
         tagNames.ifPresent(value -> {
-            queryString.append("join place_tag pt on v.place_id = pt.place_id " +
-                    "join tag t on pt.tag_id = t.tag_id ");
-            joiner.add("t.name in (:tags)");
-            parameters.put("tags", String.join(", ", value));
+            queryString.append("join PlaceTag pt on v.placeId = pt.place.placeId " +
+                    "join Tag t on pt.tag.tagId = t.tagId ");
+            joiner.add("t.name in ('%s')".formatted(String.join("', '", value)));
         });
 
         position.ifPresent(value -> {
@@ -46,16 +54,16 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
 
         if(joiner.length() > 0) {
             queryString.append("WHERE ");
-            queryString.append(joiner.toString());
+            queryString.append(joiner.toString()).append(" ");
         }
 
         tagNames.ifPresent(value -> {
-            queryString.append("group by v.place_id " +
+            queryString.append("group by v.placeId " +
                     "having count(t.name) >= :tagCount");
             parameters.put("tagCount", value.size());
         });
 
-        TypedQuery<Valley> query = em.createQuery(queryString.toString(), Valley.class);
+        TypedQuery<ValleyQueryDTO> query = em.createQuery(queryString.toString(), ValleyQueryDTO.class);
 
         parameters.forEach(query::setParameter);
 
@@ -63,7 +71,6 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
             query.setMaxResults(10);
             query.setFirstResult(offset.intValue());
         }
-
-        return PlaceMapper.INSTANCE.valleysToValleyResponses(query.getResultList());
+        return PlaceMapper.INSTANCE.valleyQueryDTOsToValleyResponses(query.getResultList());
     }
 }

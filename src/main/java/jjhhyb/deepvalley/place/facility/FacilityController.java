@@ -20,7 +20,6 @@ public class FacilityController {
 
     @GetMapping("")
     public ResponseEntity<List<FacilityResponse>> searchFacilities(@RequestParam Optional<List<Double>> position,
-                                                                 @RequestParam("tag_names") Optional<List<String>> tagNames,
                                                                  @RequestParam(defaultValue = "10000") Long radius) {
         position.ifPresentOrElse(value -> {
             if(value.size() < 2) {
@@ -30,7 +29,7 @@ public class FacilityController {
             throw new IllegalArgumentException("위치 값은 필수입니다.");
         });
 
-        List<FacilityResponse> facilityResponses = facilityService.searchFacilities(position, tagNames, radius);
+        List<FacilityResponse> facilityResponses = facilityService.searchFacilities(position, radius);
         return ResponseEntity.ok(facilityResponses);
     }
 

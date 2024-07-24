@@ -1,6 +1,9 @@
 package jjhhyb.deepvalley.place.valley;
 
+import jjhhyb.deepvalley.place.PlaceMapper;
 import jjhhyb.deepvalley.place.exception.PlaceNotFoundException;
+import jjhhyb.deepvalley.place.valley.dto.ValleyDetailResponse;
+import jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO;
 import jjhhyb.deepvalley.place.valley.dto.ValleyResponse;
 import jjhhyb.deepvalley.place.valley.repository.ValleyRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +18,9 @@ public class ValleyService {
 
     private final ValleyRepository valleyRepository;
 
-    public Valley getValleyByUuid(String uuid) {
-        Optional<Valley> valleyOptional = valleyRepository.findByUuid(uuid);
-        return valleyOptional.orElseThrow(() -> new PlaceNotFoundException("존재하지 않는 계곡 ID 입니다."));
+    public ValleyDetailResponse getValleyByUuid(String uuid) {
+        Optional<ValleyQueryDTO> valleyOptional = valleyRepository.findByUuid(uuid);
+        return PlaceMapper.INSTANCE.valleyQueryDTOToValleyDetailResponse(valleyOptional.orElseThrow(() -> new PlaceNotFoundException("존재하지 않는 계곡 ID 입니다.")));
     }
 
     public List<ValleyResponse> searchValleys(Optional<List<Double>> position,

@@ -4,6 +4,7 @@ import jjhhyb.deepvalley.place.facility.Facility;
 import jjhhyb.deepvalley.place.facility.dto.FacilityResponse;
 import jjhhyb.deepvalley.place.valley.Valley;
 import jjhhyb.deepvalley.place.valley.dto.ValleyDetailResponse;
+import jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO;
 import jjhhyb.deepvalley.place.valley.dto.ValleyResponse;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -24,7 +25,7 @@ public class PlaceMapperTests {
 
     @Test
     void shouldMapValleyToValleyDetailResponse() {
-        Valley valley = Valley.builder()
+        ValleyQueryDTO valleyQueryDTO = ValleyQueryDTO.builder()
                 .name("valleyA")
                 .uuid("sampleId")
                 .thumbnail("someURL")
@@ -39,9 +40,10 @@ public class PlaceMapperTests {
                 .closingTime(LocalTime.MIDNIGHT)
                 .maxDepth(5)
                 .avgDepth(2)
+                .tagNames("A,B")
                 .build();
 
-        ValleyDetailResponse response = PlaceMapper.INSTANCE.valleyToValleyDetailResponse(valley);
+        ValleyDetailResponse response = PlaceMapper.INSTANCE.valleyQueryDTOToValleyDetailResponse(valleyQueryDTO);
 
         assertNotNull(response);
         assertEquals("valleyA", response.getName());
@@ -59,12 +61,12 @@ public class PlaceMapperTests {
         assertEquals(LocalTime.MIDNIGHT, response.getClosingTime());
         assertEquals(5, response.getMaxDepth());
         assertEquals(2, response.getAvgDepth());
-
+        assertEquals("[A, B]", response.getTagNames().toString());
     }
 
     @Test
     void shouldMapValleysToValleyResponses() {
-        Valley valley1 = Valley.builder()
+        ValleyQueryDTO valley1 = ValleyQueryDTO.builder()
                 .name("valleyA")
                 .uuid("sampleId")
                 .thumbnail("someURL")
@@ -80,12 +82,12 @@ public class PlaceMapperTests {
                 .maxDepth(5)
                 .avgDepth(2)
                 .build();
-        Valley valley2 = Valley.builder()
+        ValleyQueryDTO valley2 = ValleyQueryDTO.builder()
                 .name("valleyB")
                 .build();
 
-        List<Valley> valleys = List.of(valley1, valley2);
-        List<ValleyResponse> valleyResponses = PlaceMapper.INSTANCE.valleysToValleyResponses(valleys);
+        List<ValleyQueryDTO> valleys = List.of(valley1, valley2);
+        List<ValleyResponse> valleyResponses = PlaceMapper.INSTANCE.valleyQueryDTOsToValleyResponses(valleys);
 
         ValleyResponse response1 = valleyResponses.get(0);
         ValleyResponse response2 = valleyResponses.get(1);

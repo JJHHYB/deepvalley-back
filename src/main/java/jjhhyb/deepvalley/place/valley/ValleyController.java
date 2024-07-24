@@ -29,7 +29,7 @@ public class ValleyController {
 
     @GetMapping("/{valleyId}/detail")
     public ResponseEntity<ValleyDetailResponse> getValleyDetail(@PathVariable String valleyId) {
-        ValleyDetailResponse valleyDetailResponse = PlaceMapper.INSTANCE.valleyToValleyDetailResponse(valleyService.getValleyByUuid(valleyId));
+        ValleyDetailResponse valleyDetailResponse = valleyService.getValleyByUuid(valleyId);
         return ResponseEntity.ok(valleyDetailResponse);
     }
 }

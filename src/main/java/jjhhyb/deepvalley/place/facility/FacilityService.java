@@ -15,8 +15,7 @@ public class FacilityService {
     private final FacilityRepository facilityRepository;
 
     public List<FacilityResponse> searchFacilities(Optional<List<Double>> position,
-                                                   Optional<List<String>> tagNames,
                                                    Long radius) {
-        return facilityRepository.searchFacilities(position, tagNames, radius);
+        return facilityRepository.searchFacilities(position, radius);
     }
 }

@@ -20,5 +20,4 @@ public class FacilityResponse {
     private final String region;
     private final Double latitude;
     private final Double longitude;
-    private final List<String> tagNames;
 }
