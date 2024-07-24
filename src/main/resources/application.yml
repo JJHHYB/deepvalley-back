@@ -42,9 +42,9 @@ swagger:
 cloud:
   aws:
     s3:
-      bucket: ${CLOUD_AWS_S3_BUCKET}
+      bucket: ${{CLOUD_AWS_S3_BUCKET}}
     region:
-      static: ${CLOUD_AWS_REGION_STATIC}
+      static: ${{CLOUD_AWS_REGION_STATIC}}
     credentials:
-      accessKey: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
-      secretKey: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
+      accessKey: ${{CLOUD_AWS_CREDENTIALS_ACCESS_KEY}}
+      secretKey: ${{CLOUD_AWS_CREDENTIALS_SECRET_KEY}}
