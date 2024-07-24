@@ -81,8 +81,7 @@ public class ReviewServiceTest {
         Member member = new Member();
         member.setMemberId(1L);
 
-        Place place = new Place();
-        place.setPlaceId(1L);
+        Place place = Place.builder().placeId(1L).build();
 
         Review review = Review.builder()
                 .uuid(UUID.randomUUID().toString())
@@ -325,8 +324,7 @@ public class ReviewServiceTest {
         Member member = new Member();
         member.setLoginEmail(loginEmail);
 
-        Place place = new Place();
-        place.setPlaceId(1L);
+        Place place = Place.builder().placeId(1L).build();
 
         Review review1 = Review.builder()
                 .uuid(UUID.randomUUID().toString())
@@ -386,8 +384,7 @@ public class ReviewServiceTest {
         Member member = new Member();
         member.setLoginEmail(loginEmail);
 
-        Place place = new Place();
-        place.setPlaceId(1L);
+        Place place = Place.builder().placeId(1L).build();
 
         Review review1 = Review.builder()
                 .uuid(UUID.randomUUID().toString())
