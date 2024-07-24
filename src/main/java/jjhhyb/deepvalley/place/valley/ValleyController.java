@@ -1,6 +1,5 @@
 package jjhhyb.deepvalley.place.valley;
 
-import jjhhyb.deepvalley.place.PlaceMapper;
 import jjhhyb.deepvalley.place.valley.dto.ValleyDetailResponse;
 import jjhhyb.deepvalley.place.valley.dto.ValleyResponse;
 import lombok.RequiredArgsConstructor;

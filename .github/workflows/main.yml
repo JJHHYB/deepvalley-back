@@ -37,6 +37,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -Pprofile=prod --exclude-task test
 
+      - name: Display current commit
+        run: git log -1
+
+      - name: Save commit hash
+        run: git rev-parse HEAD > commit_hash.txt
+
       # 디렉토리 생성
       - name: Make Directory
         run: mkdir -p deploy
@@ -53,6 +59,18 @@ jobs:
       - name: Copy script
         run: cp ./scripts/*.sh ./deploy
 
+      # commit hash 파일 복사
+      - name: Copy commit hash
+        run: cp commit_hash.txt ./deploy
+
+      # Secret key 복사
+      - name: Setup environment variables
+        run: touch ./deploy/secrets.yml
+      - run: echo "CLOUD_AWS_REGION_STATIC:" ${{ env.AWS_REGION }} >> ./deploy/secrets.yml
+      - run: echo "CLOUD_AWS_CREDENTIALS_ACCESS_KEY:" ${{ secrets.AWS_ACCESS_KEY }} >> ./deploy/secrets.yml
+      - run: echo "CLOUD_AWS_CREDENTIALS_SECRET_KEY:" ${{ secrets.AWS_SECRET_KEY }} >> ./deploy/secrets.yml
+      - run: echo "CLOUD_AWS_S3_BUCKET:" ${{ env.IMAGE_S3_BUCKET_NAME}} >> ./deploy/secrets.yml
+
       - name: Make zip file
         run: zip -r ./deepvalley.zip ./deploy
         shell: bash
@@ -63,13 +81,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup environment variables
-        run: |
-          echo "CLOUD_AWS_REGION_STATIC=${{ env.AWS_REGION }}" >> $GITHUB_ENV
-          echo "CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-          echo "CLOUD_AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          echo "CLOUD_AWS_S3_BUCKET=${{ env.IMAGE_S3_BUCKET_NAME }}" >> $GITHUB_ENV
 
       - name: Upload to S3
         run: aws s3 cp --region ${{ env.AWS_REGION }} ./deepvalley.zip s3://${{ env.DEPLOY_S3_BUCKET_NAME }}/
