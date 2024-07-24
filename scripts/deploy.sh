@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+REPOSITORY=/home/ubuntu/app
+
 echo "> 현재 구동 중인 애플리케이션 pid 확인"
 
-CURRENT_PID=$(ps aux | grep 'java -jar.*deepvalley' | grep -v grep | awk '{print $2}')
+CURRENT_PID=$(pgrep -f deepvalley)
 
 echo "현재 구동 중인 애플리케이션 pid: $CURRENT_PID"
 
@@ -14,17 +16,9 @@ else
   sleep 5
 fi
 
-REPOSITORY=/home/ubuntu/app
-
 echo "> 새 애플리케이션 배포"
 
-if [ ! -d "$REPOSITORY" ]; then
-  echo "Error: $REPOSITORY 디렉토리가 없습니다. 디렉토리를 생성합니다."
-  mkdir -p $REPOSITORY || echo "디렉토리 생성 실패. 권한을 확인하세요."
-  chown $(whoami):$(whoami) $REPOSITORY || echo "디렉토리 소유권 변경 실패."
-fi
-
-JAR_NAME=$(ls -tr $REPOSITORY/*SNAPSHOT.jar | tail -n 1)
+JAR_NAME=$(ls $REPOSITORY/ |grep 'deepvalley' | tail -n 1)
 
 if [ -z "$JAR_NAME" ]; then
   echo "Error: JAR 파일을 찾을 수 없습니다."
