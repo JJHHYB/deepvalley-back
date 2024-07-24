@@ -76,7 +76,6 @@ public class ReviewServiceTest {
                 .privacy("PUBLIC")
                 .placeId("123")
                 .tagNames(List.of("캠핑", "주차가능"))
-                .imageUrls(List.of("image1.jpg", "image2.jpg"))
                 .build();
 
         Member member = new Member();

@@ -55,7 +55,8 @@ public class ReviewService {
         Review savedReview = reviewRepository.save(review);
 
         // 이미지, 태그 처리
-        List<ReviewImage> reviewImages = reviewImageService.processImages(request.getImageUrls(), savedReview);
+        List<String> imageUrls = reviewImageService.uploadImagesAndGetUrls(request.getImageUrls());
+        List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, savedReview);
         List<ReviewTag> reviewTags = reviewTagService.processTags(request.getTagNames(), savedReview);
 
         // 생성된 리뷰에 이미지와 태그를 추가하고, 업데이트된 리뷰를 데이터베이스에 저장
@@ -75,7 +76,8 @@ public class ReviewService {
         updateReviewEntity(updateReview, request);
 
         // 이미지, 태그 처리
-        List<ReviewImage> updatedReviewImages = reviewImageService.processImages(request.getImageUrls(), updateReview);
+        List<String> imageUrls = reviewImageService.uploadImagesAndGetUrls(request.getImageUrls());
+        List<ReviewImage> updatedReviewImages = reviewImageService.processImages(imageUrls, updateReview);
         List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
 
         // 기존의 이미지, 태그 제거 및 업데이트
