@@ -3,6 +3,10 @@ spring:
     name: deepvalley
   profiles:
     active: dev
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
 
 logging:
   level:
@@ -35,4 +39,12 @@ swagger:
   development:
     url: http://ec2-13-124-151-228.ap-northeast-2.compute.amazonaws.com:8080
 
-
+cloud:
+  aws:
+    s3:
+      bucket: S3-Value	# CLOUD_AWS_S3_BUCKET
+    region:
+      static: ap-northeast-2
+    credentials:
+      accessKey: ACCESS-KEY-VALUE  # CLOUD_AWS_CREDENTIALS_ACCESS_KEY
+      secretKey: SECRET-KEY-VALUE  # CLOUD_AWS_CREDENTIALS_SECRET_KEY

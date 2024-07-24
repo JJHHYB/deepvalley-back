@@ -12,9 +12,11 @@ import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
 import jjhhyb.deepvalley.community.service.ReviewService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,7 +26,7 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
 
-    @PostMapping("/api/review")
+    @PostMapping(value = "/api/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "리뷰 작성", description = "리뷰를 작성합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "리뷰 작성 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReviewDetailResponse.class))),
@@ -33,14 +35,15 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     public ReviewDetailResponse createReview(
-            @RequestBody ReviewPostRequest reviewPostRequest,
+            @RequestPart("reviewPostRequest") ReviewPostRequest reviewPostRequest,
+            @RequestPart("imageUrls") List<MultipartFile> imageFiles,
             Authentication auth
     ) {
         String userId = auth.getName(); // 인증이 되어 있는 UserID
-        return reviewService.createReview(reviewPostRequest, userId);
+        return reviewService.createReview(reviewPostRequest, imageFiles, userId);
     }
 
-    @PutMapping("/api/review/{review-id}")
+    @PutMapping(value = "/api/review/{review-id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "리뷰 수정", description = "리뷰를 수정합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "리뷰 수정 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReviewDetailResponse.class))),
@@ -51,11 +54,12 @@ public class ReviewController {
     })
     public ReviewDetailResponse updateReview(
             @PathVariable("review-id") String reviewId,
-            @RequestBody ReviewPostRequest reviewPostRequest,
+            @RequestPart("reviewPostRequest") ReviewPostRequest reviewPostRequest,
+            @RequestPart(value = "imageUrls", required = false) List<MultipartFile> imageFiles,
             Authentication auth
     ) {
         String userId = auth.getName(); // 인증이 되어 있는 UserID
-        return reviewService.updateReview(reviewId, reviewPostRequest, userId);
+        return reviewService.updateReview(reviewId, reviewPostRequest, imageFiles, userId);
     }
 
     @DeleteMapping("/api/review/{review-id}")

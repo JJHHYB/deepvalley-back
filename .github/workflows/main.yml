@@ -7,7 +7,8 @@ on:
     branches: [ "main" ]
 
 env:
-  S3_BUCKET_NAME: deep-valley-back-deploy
+  DEPLOY_S3_BUCKET_NAME: deep-valley-back-deploy
+  IMAGE_S3_BUCKET_NAME: deep-valley-image
   AWS_REGION: ap-northeast-2
   CODE_DEPLOY_APPLICATION_NAME: deep-valley
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: deep-valley-server
@@ -73,8 +74,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Setup environment variables
+        run: |
+          echo "CLOUD_AWS_REGION_STATIC=${{ env.AWS_REGION }}" >> $GITHUB_ENV
+          echo "CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "CLOUD_AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "CLOUD_AWS_S3_BUCKET=${{ env.IMAGE_S3_BUCKET_NAME }}" >> $GITHUB_ENV
+
       - name: Upload to S3
-        run: aws s3 cp --region ${{ env.AWS_REGION }} ./deepvalley.zip s3://${{ env.S3_BUCKET_NAME }}/
+        run: aws s3 cp --region ${{ env.AWS_REGION }} ./deepvalley.zip s3://${{ env.DEPLOY_S3_BUCKET_NAME }}/
 
       # Deploy
       - name: Deploy to AWS EC2 from S3
@@ -83,4 +91,4 @@ jobs:
             --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} 
             --deployment-config-name CodeDeployDefault.AllAtOnce
             --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} 
-            --s3-location bucket=${{ env.S3_BUCKET_NAME }},key=deepvalley.zip,bundleType=zip
+            --s3-location bucket=${{ env.DEPLOY_S3_BUCKET_NAME }},key=deepvalley.zip,bundleType=zip

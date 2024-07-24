@@ -18,6 +18,7 @@ import jjhhyb.deepvalley.user.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -44,7 +45,7 @@ public class ReviewService {
     private static final String NOT_USER_REVIEW = "사용자가 작성한 리뷰가 아닙니다.";
 
     @Transactional
-    public ReviewDetailResponse createReview(ReviewPostRequest request, String userId) {
+    public ReviewDetailResponse createReview(ReviewPostRequest request, List<MultipartFile> imageFiles, String userId) {
         // userId를 이용하여 Member 엔티티 조회
         Member member = findMemberByUserId(userId);
 
@@ -54,8 +55,11 @@ public class ReviewService {
         // 생성한 Review 엔티티 데이터베이스에 저장
         Review savedReview = reviewRepository.save(review);
 
+        // 이미지 파일 업로드 및 URL 생성
+        List<String> imageUrls = reviewImageService.uploadImagesAndGetUrls(imageFiles);
+
         // 이미지, 태그 처리
-        List<ReviewImage> reviewImages = reviewImageService.processImages(request.getImageUrls(), savedReview);
+        List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, savedReview);
         List<ReviewTag> reviewTags = reviewTagService.processTags(request.getTagNames(), savedReview);
 
         // 생성된 리뷰에 이미지와 태그를 추가하고, 업데이트된 리뷰를 데이터베이스에 저장
@@ -67,15 +71,18 @@ public class ReviewService {
 
     // 리뷰 업데이트
     @Transactional
-    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, String userId) {
+    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, List<MultipartFile> imageFiles,  String userId) {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
 
         // 리뷰 엔티티 업데이트
         updateReviewEntity(updateReview, request);
 
+        // 이미지 파일 업로드 및 URL 생성
+        List<String> imageUrls = reviewImageService.uploadImagesAndGetUrls(imageFiles);
+
         // 이미지, 태그 처리
-        List<ReviewImage> updatedReviewImages = reviewImageService.processImages(request.getImageUrls(), updateReview);
+        List<ReviewImage> updatedReviewImages = reviewImageService.processImages(imageUrls, updateReview);
         List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
 
         // 기존의 이미지, 태그 제거 및 업데이트
