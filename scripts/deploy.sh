@@ -4,7 +4,7 @@ REPOSITORY=/home/ubuntu/app
 
 echo "> 현재 구동 중인 애플리케이션 pid 확인"
 
-CURRENT_PID=$(pgrep -f deepvalley)
+CURRENT_PID=$(ps aux | grep 'java -jar.*deepvalley' | awk '{print $2}')
 
 echo "현재 구동 중인 애플리케이션 pid: $CURRENT_PID"
 
@@ -18,7 +18,7 @@ fi
 
 echo "> 새 애플리케이션 배포"
 
-JAR_NAME=$(ls $REPOSITORY/ |grep 'deepvalley' | tail -n 1)
+JAR_NAME=$(ls $REPOSITORY | grep 'deepvalley' | tail -n 1)
 
 if [ -z "$JAR_NAME" ]; then
   echo "Error: JAR 파일을 찾을 수 없습니다."
