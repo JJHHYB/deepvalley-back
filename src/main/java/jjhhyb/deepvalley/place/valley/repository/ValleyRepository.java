@@ -14,8 +14,8 @@ public interface ValleyRepository extends JpaRepository<Valley, Long>, Customize
             "v.placeId, v.name, v.uuid, v.thumbnail, v.address, v.contact, v.region, v.content, v.location, v.postCount, v.avgRating, " +
             "v.openingTime, v.closingTime, v.createdDate, v.updatedDate, group_concat(t.name), v.maxDepth, v.avgDepth) " +
             "from Valley v " +
-            "join PlaceTag pt on v.placeId = pt.place.placeId " +
-            "join Tag t on pt.tag.tagId = t.tagId " +
+            "left join PlaceTag pt on v.placeId = pt.place.placeId " +
+            "left join Tag t on pt.tag.tagId = t.tagId " +
             "where v.uuid = ?1 " +
             "group by v.placeId")
     Optional<ValleyQueryDTO> findByUuid(String uuid);
