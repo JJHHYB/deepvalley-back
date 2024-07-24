@@ -28,4 +28,9 @@ chmod +x $JAR_NAME
 
 echo "> $JAR_NAME 실행"
 
-nohup java -jar $JAR_NAME --spring.profiles.active=prod >> $REPOSITORY/nohup.out 2>&1 &
+nohup java -Dcloud.aws.s3.bucket=${CLOUD_AWS_S3_BUCKET} \
+            -Dcloud.aws.region.static=${CLOUD_AWS_REGION_STATIC} \
+            -Dcloud.aws.credentials.accessKey=${CLOUD_AWS_CREDENTIALS_ACCESS_KEY} \
+            -Dcloud.aws.credentials.secretKey=${CLOUD_AWS_CREDENTIALS_SECRET_KEY} \
+            -jar $JAR_NAME --spring.profiles.active=prod \
+            >> $REPOSITORY/nohup.out 2>&1 &
