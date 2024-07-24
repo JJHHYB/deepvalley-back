@@ -40,8 +40,7 @@ public class ReviewController {
             Authentication auth
     ) {
         String userId = auth.getName(); // 인증이 되어 있는 UserID
-        reviewPostRequest.setImageUrls(imageFiles);
-        return reviewService.createReview(reviewPostRequest, userId);
+        return reviewService.createReview(reviewPostRequest, imageFiles, userId);
     }
 
     @PutMapping(value = "/api/review/{review-id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -60,8 +59,7 @@ public class ReviewController {
             Authentication auth
     ) {
         String userId = auth.getName(); // 인증이 되어 있는 UserID
-        reviewPostRequest.setImageUrls(imageFiles);
-        return reviewService.updateReview(reviewId, reviewPostRequest, userId);
+        return reviewService.updateReview(reviewId, reviewPostRequest, imageFiles, userId);
     }
 
     @DeleteMapping("/api/review/{review-id}")
