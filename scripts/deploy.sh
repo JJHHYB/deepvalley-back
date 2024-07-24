@@ -4,7 +4,7 @@ REPOSITORY=/home/ubuntu/app
 
 echo "> 현재 구동 중인 애플리케이션 pid 확인"
 
-CURRENT_PID=$(ps -ef | grep 'java -jar.*deepvalley' | grep -v grep | awk '{print $2}')
+CURRENT_PID=$(ps aux | grep 'java -jar.*deepvalley' | awk '{print $2}')
 
 echo "현재 구동 중인 애플리케이션 pid: $CURRENT_PID"
 
@@ -18,7 +18,17 @@ fi
 
 echo "> 새 애플리케이션 배포"
 
+if [ ! -d "$REPOSITORY" ]; then
+  echo "Error: $REPOSITORY 디렉토리가 없습니다. 디렉토리를 생성합니다."
+  mkdir -p $REPOSITORY
+fi
+
 JAR_NAME=$(ls -tr $REPOSITORY/*SNAPSHOT.jar | tail -n 1)
+
+if [ -z "$JAR_NAME" ]; then
+  echo "Error: JAR 파일을 찾을 수 없습니다."
+  exit 1
+fi
 
 echo "> JAR NAME: $JAR_NAME"
 
