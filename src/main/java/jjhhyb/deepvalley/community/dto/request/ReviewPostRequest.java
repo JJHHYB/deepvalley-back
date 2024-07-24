@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,5 +18,5 @@ public class ReviewPostRequest {
     private String privacy;
     private String placeId;
     private List<String> tagNames;
-    private List<MultipartFile> imageUrls;
+    private List<String> imageUrls;
 }

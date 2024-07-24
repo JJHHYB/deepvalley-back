@@ -5,6 +5,7 @@ spring:
     active: dev
   servlet:
     multipart:
+      enabled: true
       max-file-size: 20MB
 
 logging:
