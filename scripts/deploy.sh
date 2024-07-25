@@ -39,13 +39,15 @@ CLOUD_AWS_S3_BUCKET=$(yq '.CLOUD_AWS_S3_BUCKET' ./secrets.yml)
 echo "버킷 이름 : $CLOUD_AWS_S3_BUCKET"
 echo "버킷 지역 : $CLOUD_AWS_REGION_STATIC"
 
-nohup java -jar $JAR_NAME \
-            --cloud.aws.s3.bucket=${CLOUD_AWS_S3_BUCKET} \
-            --cloud.aws.region.static=${CLOUD_AWS_REGION_STATIC} \
-            --cloud.aws.credentials.accessKey=${CLOUD_AWS_CREDENTIALS_ACCESS_KEY} \
-            --cloud.aws.credentials.secretKey=${CLOUD_AWS_CREDENTIALS_SECRET_KEY} \
-            --spring.profiles.active=prod \
-            >> /home/ubuntu/app/nohup.out 2>&1 &
+CMD="nohup java -jar $JAR_NAME \
+                 --cloud.aws.s3.bucket=${CLOUD_AWS_S3_BUCKET} \
+                 --cloud.aws.region.static=${CLOUD_AWS_REGION_STATIC} \
+                 --cloud.aws.credentials.accessKey=${CLOUD_AWS_CREDENTIALS_ACCESS_KEY} \
+                 --cloud.aws.credentials.secretKey=${CLOUD_AWS_CREDENTIALS_SECRET_KEY} \
+                 --spring.profiles.active=prod \
+                 >> /home/ubuntu/app/nohup.out 2>&1 &"
+
+eval $CMD
 
 # 배포 로그 기록
 if [ -f "/home/ubuntu/app/commit_hash.txt" ]; then
