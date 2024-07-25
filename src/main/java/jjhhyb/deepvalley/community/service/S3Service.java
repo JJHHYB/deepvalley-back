@@ -24,6 +24,7 @@ public class S3Service {
     private String bucket;
 
     public String uploadFile(MultipartFile multipartFile, String folderName) {
+        System.out.println("bucket = " + bucket);
         String fileName = createFileName(multipartFile.getOriginalFilename(), folderName);
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(multipartFile.getSize());
