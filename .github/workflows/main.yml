@@ -55,6 +55,10 @@ jobs:
       - name: Copy appspec.yml
         run: cp appspec.yml ./deploy
 
+      # Grant permission for deploy.sh
+      - name: Grant execute permission for deploy.sh
+        run: chmod +x ./scripts/deploy.sh
+
       # script files 복사
       - name: Copy script
         run: cp ./scripts/*.sh ./deploy
