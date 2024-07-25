@@ -47,7 +47,7 @@ CMD="nohup java -jar $JAR_NAME \
                  --spring.profiles.active=prod \
                  >> /home/ubuntu/app/nohup.out 2>&1 &"
 
-eval $CMD
+eval "$CMD"
 
 # 배포 로그 기록
 if [ -f "/home/ubuntu/app/commit_hash.txt" ]; then
