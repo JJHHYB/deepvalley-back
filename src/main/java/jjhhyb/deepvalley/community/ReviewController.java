@@ -27,9 +27,6 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
-
     @PostMapping(value = "/api/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "리뷰 작성", description = "리뷰를 작성합니다.")
     @ApiResponses(value = {
@@ -43,7 +40,6 @@ public class ReviewController {
             @RequestPart("imageUrls") List<MultipartFile> imageFiles,
             Authentication auth
     ) {
-        System.out.println("bucket = " + bucket);
         String userId = auth.getName(); // 인증이 되어 있는 UserID
         return reviewService.createReview(reviewPostRequest, imageFiles, userId);
     }

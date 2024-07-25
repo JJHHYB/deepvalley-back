@@ -4,6 +4,7 @@ import jjhhyb.deepvalley.place.PlaceMapper;
 import jjhhyb.deepvalley.place.valley.dto.ValleyDetailResponse;
 import jjhhyb.deepvalley.place.valley.dto.ValleyResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,9 @@ public class ValleyController {
 
     private final ValleyService valleyService;
 
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
     @GetMapping("")
     public ResponseEntity<List<ValleyResponse>> searchValleys(@RequestParam Optional<List<Double>> position,
                                               @RequestParam("tag_names") Optional<List<String>> tagNames,
@@ -24,6 +28,7 @@ public class ValleyController {
                                               @RequestParam(required = false) Optional<Double> rating,
                                               @RequestParam(defaultValue = "0") Long offset) {
         List<ValleyResponse> valleyResponses = valleyService.searchValleys(position, tagNames, radius, rating, offset);
+        System.out.println("bucket = " + bucket);
         return ResponseEntity.ok(valleyResponses);
     }
 
