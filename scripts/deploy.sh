@@ -4,8 +4,7 @@ REPOSITORY=/home/ubuntu/app
 
 echo "> 현재 구동 중인 애플리케이션 pid 확인"
 
-#CURRENT_PID=$(ps aux | grep 'java -jar.*deepvalley' | awk '{print $2}')
-CURRENT_PID=$(pgrep -f deepvalley.*.jar)
+CURRENT_PID=$(pgrep -f deepvalley)
 
 echo "현재 구동 중인 애플리케이션 pid: $CURRENT_PID"
 
@@ -19,8 +18,7 @@ fi
 
 echo "> 새 애플리케이션 배포"
 
-#JAR_NAME=$(ls $REPOSITORY | grep 'deepvalley' | tail -n 1)
-JAR_NAME=$(ls $REPOSITORY/ | grep jar | tail -n 1)
+JAR_NAME=$(ls $REPOSITORY | grep 'deepvalley' | tail -n 1)
 
 if [ -z "$JAR_NAME" ]; then
   echo "Error: JAR 파일을 찾을 수 없습니다."
@@ -35,10 +33,10 @@ chmod +x $JAR_NAME
 
 echo "> $JAR_NAME 실행"
 
-nohup java -Dcloud.aws.s3.bucket=${CLOUD_AWS_S3_BUCKET} \
-            -Dcloud.aws.region.static=${CLOUD_AWS_REGION_STATIC} \
-            -Dcloud.aws.credentials.accessKey=${CLOUD_AWS_CREDENTIALS_ACCESS_KEY} \
-            -Dcloud.aws.credentials.secretKey=${CLOUD_AWS_CREDENTIALS_SECRET_KEY} \
+nohup java -jar $JAR_NAME --cloud.aws.s3.bucket=${CLOUD_AWS_S3_BUCKET} \
+            -jar $JAR_NAME --cloud.aws.region.static=${CLOUD_AWS_REGION_STATIC} \
+            -jar $JAR_NAME --cloud.aws.credentials.accessKey=${CLOUD_AWS_CREDENTIALS_ACCESS_KEY} \
+            -jar $JAR_NAME --cloud.aws.credentials.secretKey=${CLOUD_AWS_CREDENTIALS_SECRET_KEY} \
             -jar $JAR_NAME --spring.profiles.active=prod \
             >> $REPOSITORY/nohup.out 2>&1 &
 
