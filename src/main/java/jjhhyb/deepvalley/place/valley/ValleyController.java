@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jjhhyb.deepvalley.place.valley.dto.ValleyDetailResponse;
 import jjhhyb.deepvalley.place.valley.dto.ValleyResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,9 @@ public class ValleyController {
 
     private final ValleyService valleyService;
 
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
     @GetMapping("")
     @Operation(summary = "계곡 검색", description = "여러 조건으로 계곡을 검색합니다.")
     @ApiResponses(value = {
@@ -32,6 +36,7 @@ public class ValleyController {
                                               @RequestParam(required = false) Optional<Double> rating,
                                               @RequestParam(defaultValue = "0") Long offset) {
         List<ValleyResponse> valleyResponses = valleyService.searchValleys(position, tagNames, radius, rating, offset);
+        System.out.println("bucket = " + bucket);
         return ResponseEntity.ok(valleyResponses);
     }
 
