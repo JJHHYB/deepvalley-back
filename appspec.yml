@@ -16,7 +16,7 @@ hooks:
     - location: setup_permissions.sh
       timeout: 300
       runas: ubuntu
-  ApplicationStart:
+  AfterInstall:
     - location: deploy.sh
       timeout: 60
       runas: ubuntu
