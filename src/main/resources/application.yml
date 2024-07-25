@@ -2,7 +2,7 @@ spring:
   application:
     name: deepvalley
   profiles:
-    active: dev
+    active: dev,secrets
   servlet:
     multipart:
       enabled: true
