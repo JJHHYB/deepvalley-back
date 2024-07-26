@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.community.service;
+package jjhhyb.deepvalley.image;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
