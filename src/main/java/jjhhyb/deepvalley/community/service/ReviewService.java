@@ -7,6 +7,8 @@ import jjhhyb.deepvalley.community.dto.response.PlaceImageResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
 import jjhhyb.deepvalley.community.ReviewNotFoundException;
+import jjhhyb.deepvalley.image.ImageService;
+import jjhhyb.deepvalley.image.ImageType;
 import jjhhyb.deepvalley.place.Place;
 import jjhhyb.deepvalley.place.PlaceRepository;
 import jjhhyb.deepvalley.tag.ReviewTagRepository;
@@ -33,6 +35,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewImageService reviewImageService;
     private final ReviewTagService reviewTagService;
+    private final ImageService imageService;
     private final ReviewImageRepository reviewImageRepository;
     private final ReviewTagRepository reviewTagRepository;
     private final MemberRepository memberRepository;
@@ -56,7 +59,7 @@ public class ReviewService {
         Review savedReview = reviewRepository.save(review);
 
         // 이미지 파일 업로드 및 URL 생성
-        List<String> imageUrls = reviewImageService.uploadImagesAndGetUrls(imageFiles);
+        List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
 
         // 이미지, 태그 처리
         List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, savedReview);
@@ -79,7 +82,7 @@ public class ReviewService {
         updateReviewEntity(updateReview, request);
 
         // 이미지 파일 업로드 및 URL 생성
-        List<String> imageUrls = reviewImageService.uploadImagesAndGetUrls(imageFiles);
+        List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
 
         // 이미지, 태그 처리
         List<ReviewImage> updatedReviewImages = reviewImageService.processImages(imageUrls, updateReview);
@@ -102,7 +105,7 @@ public class ReviewService {
         Review review = validateReviewOwner(reviewId, userId);
 
         // 리뷰와 연관된 모든 이미지 삭제
-        List<ReviewImage> reviewImages = reviewImageService.findByReviewId(review.getReviewId());
+        List<ReviewImage> reviewImages = reviewImageRepository.findByReview_ReviewId(review.getReviewId());
         reviewImageService.deleteAll(reviewImages);
 
         // 리뷰와 연관된 모든 태그 삭제
