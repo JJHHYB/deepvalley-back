@@ -6,9 +6,9 @@ import jjhhyb.deepvalley.community.entity.Image;
 import jjhhyb.deepvalley.community.entity.Review;
 import jjhhyb.deepvalley.community.entity.ReviewImage;
 import jjhhyb.deepvalley.entityId.ReviewImageId;
+import jjhhyb.deepvalley.image.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,16 +20,7 @@ import java.util.stream.Collectors;
 public class ReviewImageService {
     private final ImageRepository imageRepository;
     private final ReviewImageRepository reviewImageRepository;
-    private final S3Service s3Service;
-    private static final String REVIEW_IMAGE_FOLDER = "review-images";
-
-
-    // 이미지 파일을 S3에 업로드하고 URL 리스트를 반환
-    public List<String> uploadImagesAndGetUrls(List<MultipartFile> imageFiles) {
-        return imageFiles.stream()
-                .map(file -> s3Service.uploadFile(file, REVIEW_IMAGE_FOLDER))
-                .collect(Collectors.toList());
-    }
+    private final ImageService imageService;
 
     // 이미지 URL 리스트로 ReviewImage 객체 리스트 생성
     public List<ReviewImage> processImages(List<String> imageUrls, Review review) {
@@ -60,8 +51,8 @@ public class ReviewImageService {
                 .collect(Collectors.toSet());
 
         // 기존 이미지 리스트와 업데이트된 이미지 IDs를 비교하여 삭제할 이미지들을 결정
-        List<ReviewImage> existingImages = new ArrayList<>(review.getReviewImages());
-        List<ReviewImage> imagesToDelete = existingImages.stream()
+        List<ReviewImage> existingImages = new ArrayList<>(review.getReviewImages());   // 모든 기존 이미지
+        List<ReviewImage> imagesToDelete = existingImages.stream()                      // 더 이상 사용되지 않는 이미지를 필터링해 포함
                 .filter(existingImage -> !updatedImageIds.contains(existingImage.getId().getImageId()))
                 .toList();
 
@@ -73,18 +64,18 @@ public class ReviewImageService {
         review.getReviewImages().addAll(updatedImages);
 
         // S3에서 이미지 삭제
-        imagesToDelete.forEach(image -> s3Service.deleteImage(image.getImage().getImageUrl()));
+        imageService.deleteImages(imagesToDelete.stream()
+                .map(image -> image.getImage().getImageUrl())
+                .collect(Collectors.toList()));
+        // 데이터 베이스에서 삭제
         reviewImageRepository.deleteAll(existingImages);
-    }
-
-    // 주어진 리뷰 ID에 연결된 모든 ReviewImage 조회
-    public List<ReviewImage> findByReviewId(Long reviewId) {
-        return reviewImageRepository.findByReview_ReviewId(reviewId);
     }
 
     // 주어진 ReviewImage 리스트의 모든 이미지 삭제
     public void deleteAll(List<ReviewImage> reviewImages) {
-        reviewImages.forEach(image -> s3Service.deleteImage(image.getImage().getImageUrl()));
+        imageService.deleteImages(reviewImages.stream()
+                .map(image -> image.getImage().getImageUrl())
+                .collect(Collectors.toList()));
         reviewImageRepository.deleteAll(reviewImages);
     }
 }
