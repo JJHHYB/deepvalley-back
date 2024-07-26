@@ -17,18 +17,13 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
     private EntityManager em;
 
     @Override
-    public List<ValleyResponse> searchValleys(Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset) {
+    public List<ValleyResponse> searchValleys(Optional<String> keyword, Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset) {
         String selectString =
                 "select new jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO(" +
                         "v.placeId, v.name, v.uuid, v.thumbnail, v.address, v.contact, v.region, v.content, v.location, v.postCount, v.avgRating, " +
                         "v.openingTime, v.closingTime, v.createdDate, v.updatedDate, null, v.maxDepth, v.avgDepth) " +
                 "from Valley v ";
         StringBuilder queryString = new StringBuilder(selectString);
-//        if(tagNames.isPresent()) {
-//            queryString.append(selectString.formatted("group_concat(t.name)"));
-//        } else {
-//            queryString.append(selectString.formatted(""));
-//        }
         StringJoiner joiner = new StringJoiner(" AND ");
         Map<String, Object> parameters = new HashMap<>();
 
@@ -50,6 +45,10 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
                         .formatted(boundingBox[0], boundingBox[1], boundingBox[2], boundingBox[3], value.get(0), value.get(1)));
                 parameters.put("radius", radius);
             }
+        });
+
+        keyword.ifPresent(value -> {
+            joiner.add("v.name like '%%%s%%'".formatted(value));
         });
 
         if(joiner.length() > 0) {

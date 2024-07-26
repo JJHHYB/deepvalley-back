@@ -6,5 +6,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CustomizedValleyRepository {
-    List<ValleyResponse> searchValleys(Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset);
+    List<ValleyResponse> searchValleys(Optional<String> keyword, Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset);
 }

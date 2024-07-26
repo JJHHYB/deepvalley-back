@@ -26,12 +26,13 @@ public class ValleyController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "계곡 검색 성공")
     })
-    public ResponseEntity<List<ValleyResponse>> searchValleys(@RequestParam Optional<List<Double>> position,
-                                              @RequestParam("tag_names") Optional<List<String>> tagNames,
-                                              @RequestParam(defaultValue = "10000") Long radius,
-                                              @RequestParam(required = false) Optional<Double> rating,
-                                              @RequestParam(defaultValue = "0") Long offset) {
-        List<ValleyResponse> valleyResponses = valleyService.searchValleys(position, tagNames, radius, rating, offset);
+    public ResponseEntity<List<ValleyResponse>> searchValleys(@RequestParam Optional<String> keyword,
+                                                              @RequestParam Optional<List<Double>> position,
+                                                              @RequestParam("tag_names") Optional<List<String>> tagNames,
+                                                              @RequestParam(defaultValue = "10000") Long radius,
+                                                              @RequestParam(required = false) Optional<Double> rating,
+                                                              @RequestParam(defaultValue = "0") Long offset) {
+        List<ValleyResponse> valleyResponses = valleyService.searchValleys(keyword, position, tagNames, radius, rating, offset);
         return ResponseEntity.ok(valleyResponses);
     }
 
