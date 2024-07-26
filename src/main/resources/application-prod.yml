@@ -1,9 +1,6 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://deepvalley-mysql.ch6g0iw4mna8.ap-northeast-2.rds.amazonaws.com:3306/mydb
-    username: myroot
-    password: mypassword
     hikari:
       connection-timeout: 20000
       maximum-pool-size: 10
