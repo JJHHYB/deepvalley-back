@@ -45,8 +45,8 @@ public class ValleyIntegrationTests {
     void init() {
         Valley[] valleys = {
                 Valley.builder().name("21990m, TagA TagB").location(geometryFactory.createPoint(new Coordinate(-106.04614590227612, 38.63804473972625))).avgRating(2.5).build(),
-                Valley.builder().name("30700m, TagA").location(geometryFactory.createPoint(new Coordinate(-105.8940008139609, 38.90771378195941))).avgRating(3.0).build(),
-                Valley.builder().name("52930m, TagA TagB TagC").location(geometryFactory.createPoint(new Coordinate(-105.21053655004484, 38.79478077778432))).avgRating(4.0).uuid("someId").build(),
+                Valley.builder().name("30700m, Key, TagA").location(geometryFactory.createPoint(new Coordinate(-105.8940008139609, 38.90771378195941))).avgRating(3.0).build(),
+                Valley.builder().name("52930m, Key, TagA TagB TagC").location(geometryFactory.createPoint(new Coordinate(-105.21053655004484, 38.79478077778432))).avgRating(4.0).uuid("someId").build(),
                 Valley.builder().name("32080m").location(geometryFactory.createPoint(new Coordinate(-105.44350871652753, 38.55071742654455))).avgRating(4.5).build(),
                 Valley.builder().name("78850m").location(geometryFactory.createPoint(new Coordinate(-104.93596221047001, 38.404625467569495))).avgRating(5.0).build(),
         };
@@ -93,10 +93,17 @@ public class ValleyIntegrationTests {
     void shouldGetValleyDetail() {
         ValleyDetailResponse response = testRestTemplate.getForObject("/api/valley/someId/detail", ValleyDetailResponse.class);
 
-        assertEquals("52930m, TagA TagB TagC", response.getName());
+        assertEquals("52930m, Key, TagA TagB TagC", response.getName());
         assertEquals(-105.21053655004484, response.getLongitude());
         assertEquals(38.79478077778432, response.getLatitude());
         assertEquals(4.0, response.getAvgRating());
         assertEquals(List.of("TagA", "TagB", "TagC").toString(), response.getTagNames().toString());
+    }
+
+    @Test
+    void shouldSearchValleyWithKeyword() {
+        List response = testRestTemplate.getForObject("/api/valley?keyword=Key", List.class);
+
+        assertEquals(2, response.size());
     }
 }
