@@ -1,5 +1,8 @@
 package jjhhyb.deepvalley.place.facility;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jjhhyb.deepvalley.place.facility.dto.FacilityResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,10 @@ public class FacilityController {
     private final FacilityService facilityService;
 
     @GetMapping("")
+    @Operation(summary = "시설 검색", description = "시설을 검색합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "시설 검색 성공")
+    })
     public ResponseEntity<List<FacilityResponse>> searchFacilities(@RequestParam Optional<List<Double>> position,
                                                                  @RequestParam(defaultValue = "10000") Long radius) {
         position.ifPresentOrElse(value -> {
