@@ -88,14 +88,16 @@ public class MemberService {
 
     @Transactional
     public void deleteMember(LoginRequestDto loginRequestDto, String authName) throws MyProfileException {
+        // 현재 인증 이메일 체크
         if (!authName.equals(loginRequestDto.getLoginEmail())) {
             throw new MyProfileException.UnauthorizedAccessException("Invalid token");
         }
-        Optional<Member> member = memberRepository.findByLoginEmail(authName);
+        // 아이디, 비밀번호 체크
+        Optional<Member> member = memberRepository.findByLoginEmailAndPassword(loginRequestDto.getLoginEmail(), loginRequestDto.getPassword());
         if (member.isPresent()) {
             memberRepository.delete(member.get());
         } else {
-            throw new MyProfileException.ProfileNotFoundException("Member not found with email " + authName);
+            throw new MyProfileException.ProfileNotFoundException("Invalid loginEmail or password. : " + authName);
         }
     }
 

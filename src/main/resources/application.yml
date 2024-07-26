@@ -24,7 +24,7 @@ jwt:
 oauth:
   kakao:
     client-id: 0254b79556922c41c5f92bfb2ddc63fa
-    redirect-uri: http://localhost:3000/auth
+    redirect-uri: https://djw9hdrinhwdq.cloudfront.net/auth
     url:
       auth: https://kauth.kakao.com
       api: https://kapi.kakao.com
