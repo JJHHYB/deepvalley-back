@@ -2,7 +2,11 @@ spring:
   application:
     name: deepvalley
   profiles:
-    active: dev
+    active: prod,secrets
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
 
 logging:
   level:
@@ -34,5 +38,3 @@ swagger:
     url: https://srv.deepvalley.net
   development:
     url: http://ec2-13-124-151-228.ap-northeast-2.compute.amazonaws.com:8080
-
-

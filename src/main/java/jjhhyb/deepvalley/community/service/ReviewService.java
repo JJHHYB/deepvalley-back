@@ -7,6 +7,8 @@ import jjhhyb.deepvalley.community.dto.response.PlaceImageResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
 import jjhhyb.deepvalley.community.ReviewNotFoundException;
+import jjhhyb.deepvalley.image.ImageService;
+import jjhhyb.deepvalley.image.ImageType;
 import jjhhyb.deepvalley.place.Place;
 import jjhhyb.deepvalley.place.PlaceRepository;
 import jjhhyb.deepvalley.tag.ReviewTagRepository;
@@ -18,6 +20,7 @@ import jjhhyb.deepvalley.user.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,6 +35,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewImageService reviewImageService;
     private final ReviewTagService reviewTagService;
+    private final ImageService imageService;
     private final ReviewImageRepository reviewImageRepository;
     private final ReviewTagRepository reviewTagRepository;
     private final MemberRepository memberRepository;
@@ -44,7 +48,7 @@ public class ReviewService {
     private static final String NOT_USER_REVIEW = "사용자가 작성한 리뷰가 아닙니다.";
 
     @Transactional
-    public ReviewDetailResponse createReview(ReviewPostRequest request, String userId) {
+    public ReviewDetailResponse createReview(ReviewPostRequest request, List<MultipartFile> imageFiles, String userId) {
         // userId를 이용하여 Member 엔티티 조회
         Member member = findMemberByUserId(userId);
 
@@ -54,8 +58,11 @@ public class ReviewService {
         // 생성한 Review 엔티티 데이터베이스에 저장
         Review savedReview = reviewRepository.save(review);
 
+        // 이미지 파일 업로드 및 URL 생성
+        List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
+
         // 이미지, 태그 처리
-        List<ReviewImage> reviewImages = reviewImageService.processImages(request.getImageUrls(), savedReview);
+        List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, savedReview);
         List<ReviewTag> reviewTags = reviewTagService.processTags(request.getTagNames(), savedReview);
 
         // 생성된 리뷰에 이미지와 태그를 추가하고, 업데이트된 리뷰를 데이터베이스에 저장
@@ -67,15 +74,18 @@ public class ReviewService {
 
     // 리뷰 업데이트
     @Transactional
-    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, String userId) {
+    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, List<MultipartFile> imageFiles,  String userId) {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
 
         // 리뷰 엔티티 업데이트
         updateReviewEntity(updateReview, request);
 
+        // 이미지 파일 업로드 및 URL 생성
+        List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
+
         // 이미지, 태그 처리
-        List<ReviewImage> updatedReviewImages = reviewImageService.processImages(request.getImageUrls(), updateReview);
+        List<ReviewImage> updatedReviewImages = reviewImageService.processImages(imageUrls, updateReview);
         List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
 
         // 기존의 이미지, 태그 제거 및 업데이트
@@ -95,7 +105,7 @@ public class ReviewService {
         Review review = validateReviewOwner(reviewId, userId);
 
         // 리뷰와 연관된 모든 이미지 삭제
-        List<ReviewImage> reviewImages = reviewImageService.findByReviewId(review.getReviewId());
+        List<ReviewImage> reviewImages = reviewImageRepository.findByReview_ReviewId(review.getReviewId());
         reviewImageService.deleteAll(reviewImages);
 
         // 리뷰와 연관된 모든 태그 삭제

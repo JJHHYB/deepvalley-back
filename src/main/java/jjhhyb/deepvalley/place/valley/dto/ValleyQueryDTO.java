@@ -1,28 +1,21 @@
-package jjhhyb.deepvalley.place;
+package jjhhyb.deepvalley.place.valley.dto;
 
-import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import org.locationtech.jts.geom.Point;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
-@SuperBuilder
-@Entity
-@DiscriminatorColumn
-@Inheritance(strategy = InheritanceType.JOINED)
-@EntityListeners(AuditingEntityListener.class)
+@Builder
 @NoArgsConstructor
-public class Place {
+@AllArgsConstructor
+public class ValleyQueryDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long placeId;
 
     private String name;
@@ -49,10 +42,14 @@ public class Place {
 
     private LocalTime closingTime;
 
-    @CreatedDate
     private LocalDateTime createdDate;
 
-    @LastModifiedDate
     private LocalDateTime updatedDate;
+
+    private String tagNames;
+
+    private Integer maxDepth;
+
+    private Integer avgDepth;
 
 }

@@ -30,9 +30,10 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-messaging'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+	implementation 'org.hibernate.orm:hibernate-spatial'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	implementation 'mysql:mysql-connector-java:8.0.30'
 
 	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
@@ -46,20 +47,25 @@ dependencies {
 	// Springdoc OpenAPI
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  
+  // AWS SDK for S3
+	implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.4.2'
+	implementation 'com.amazonaws:aws-java-sdk-s3'
 
 	// MySQL
-	runtimeOnly 'mysql:mysql-connector-java'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.30'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	if (profile.equals('dev')) {
 		runtimeOnly 'com.h2database:h2'
+		runtimeOnly 'org.orbisgis:h2gis:2.2.1'
 	}
 }
 

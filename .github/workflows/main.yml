@@ -7,7 +7,8 @@ on:
     branches: [ "main" ]
 
 env:
-  S3_BUCKET_NAME: deep-valley-back-deploy
+  DEPLOY_S3_BUCKET_NAME: deep-valley-back-deploy
+  IMAGE_S3_BUCKET_NAME: deep-valley-image
   AWS_REGION: ap-northeast-2
   CODE_DEPLOY_APPLICATION_NAME: deep-valley
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: deep-valley-server
@@ -36,6 +37,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -Pprofile=prod --exclude-task test
 
+      - name: Display current commit
+        run: git log -1
+
+      - name: Save commit hash
+        run: git rev-parse HEAD > commit_hash.txt
+
       # 디렉토리 생성
       - name: Make Directory
         run: mkdir -p deploy
@@ -48,9 +55,25 @@ jobs:
       - name: Copy appspec.yml
         run: cp appspec.yml ./deploy
 
+      # Grant permission for deploy.sh
+      - name: Grant execute permission for deploy.sh
+        run: chmod +x ./scripts/deploy.sh
+
       # script files 복사
       - name: Copy script
         run: cp ./scripts/*.sh ./deploy
+
+      # commit hash 파일 복사
+      - name: Copy commit hash
+        run: cp commit_hash.txt ./deploy
+
+      # Secret key 복사
+      - name: Setup environment variables
+        run: touch ./deploy/secrets.yml
+      - run: echo "CLOUD_AWS_REGION_STATIC:" ${{ env.AWS_REGION }} >> ./deploy/secrets.yml
+      - run: echo "CLOUD_AWS_CREDENTIALS_ACCESS_KEY:" ${{ secrets.AWS_ACCESS_KEY }} >> ./deploy/secrets.yml
+      - run: echo "CLOUD_AWS_CREDENTIALS_SECRET_KEY:" ${{ secrets.AWS_SECRET_KEY }} >> ./deploy/secrets.yml
+      - run: echo "CLOUD_AWS_S3_BUCKET:" ${{ env.IMAGE_S3_BUCKET_NAME}} >> ./deploy/secrets.yml
 
       - name: Make zip file
         run: zip -r ./deepvalley.zip ./deploy
@@ -64,7 +87,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload to S3
-        run: aws s3 cp --region ${{ env.AWS_REGION }} ./deepvalley.zip s3://${{ env.S3_BUCKET_NAME }}/
+        run: aws s3 cp --region ${{ env.AWS_REGION }} ./deepvalley.zip s3://${{ env.DEPLOY_S3_BUCKET_NAME }}/
 
       # Deploy
       - name: Deploy to AWS EC2 from S3
@@ -73,4 +96,4 @@ jobs:
             --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} 
             --deployment-config-name CodeDeployDefault.AllAtOnce
             --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} 
-            --s3-location bucket=${{ env.S3_BUCKET_NAME }},key=deepvalley.zip,bundleType=zip
+            --s3-location bucket=${{ env.DEPLOY_S3_BUCKET_NAME }},key=deepvalley.zip,bundleType=zip

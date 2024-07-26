@@ -15,9 +15,11 @@ import jjhhyb.deepvalley.user.entity.Member;
 import jjhhyb.deepvalley.user.exception.LoginException;
 import jjhhyb.deepvalley.user.service.MemberService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -73,13 +75,8 @@ public class MemberController {
             @Parameter(description = "로그인 정보", required = true) @RequestBody LoginRequestDto loginRequestDto) {
         Optional<Member> user = memberService.authenticate(loginRequestDto.getLoginEmail(), loginRequestDto.getPassword());
 
-        if (user.isEmpty()) {
-            throw new LoginException.UserNotFoundException("User not found");
-        }
-
-        if (!user.get().getPassword().equals(loginRequestDto.getPassword())) {
-            throw new LoginException.InvalidCredentialsException("Invalid password");
-        }
+        if (user.isEmpty()) { throw new LoginException.UserNotFoundException("User not found"); }
+        if (!user.get().getPassword().equals(loginRequestDto.getPassword())) { throw new LoginException.InvalidCredentialsException("Invalid password"); }
 
         Member memberEntity = user.get();
         memberEntity.setLoginDate(LocalDateTime.now());
@@ -106,7 +103,7 @@ public class MemberController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PutMapping
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "회원 프로필 수정", description = "현재 로그인한 사용자의 프로필을 수정합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "수정 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProfileResponseDto.class))),
@@ -115,9 +112,11 @@ public class MemberController {
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(examples = @ExampleObject( value = "Internal Server Error" )))
     })
     public ResponseEntity<ProfileResponseDto> updateMember(
-            @Parameter(description = "프로필 수정 정보", required = true) @RequestBody ProfileRequestDto profileRequestDto,
+            @RequestPart(value = "profileRequest") ProfileRequestDto profileRequest,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
             Authentication auth) throws Exception {
-        Optional<Member> member = memberService.updateMember(profileRequestDto, auth.getName());
+
+        Optional<Member> member = memberService.updateMember(profileRequest, profileImage, auth.getName());// 인증이 되어 있는 UserID
         return member.map(m -> ResponseEntity.ok(ProfileResponseDto.fromMember(m)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
