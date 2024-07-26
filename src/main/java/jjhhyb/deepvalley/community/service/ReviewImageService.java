@@ -29,7 +29,7 @@ public class ReviewImageService {
                 .collect(Collectors.toList());
     }
 
-    // 이미지 URL로 Image 객체 생성 or 업데이트   ********************************************
+    // 이미지 URL로 Image 객체 생성 or 업데이트
     private ReviewImage createOrUpdateImage(String imageUrl, Review review) {
         // 데이터베이스에서 이미지 조회, 없으면 새로 생성
         Image image = imageRepository.findByImageUrl(imageUrl);
@@ -44,7 +44,7 @@ public class ReviewImageService {
                 .build();
     }
 
-    // 리뷰와 연결된 이미지 업데이트     *******************************************
+    // 리뷰와 연결된 이미지 업데이트
     public void updateReviewImages(Review review, List<ReviewImage> updatedImages) {
         Set<Long> updatedImageIds = updatedImages.stream()
                 .map(reviewImage -> reviewImage.getId().getImageId())

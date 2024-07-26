@@ -23,11 +23,12 @@ public class ValleyService {
         return PlaceMapper.INSTANCE.valleyQueryDTOToValleyDetailResponse(valleyOptional.orElseThrow(() -> new PlaceNotFoundException("존재하지 않는 계곡 ID 입니다.")));
     }
 
-    public List<ValleyResponse> searchValleys(Optional<List<Double>> position,
+    public List<ValleyResponse> searchValleys(Optional<String> keyword,
+                                              Optional<List<Double>> position,
                                               Optional<List<String>> tagNames,
                                               Long radius,
                                               Optional<Double> rating,
                                               Long offset) {
-        return valleyRepository.searchValleys(position, tagNames, radius, rating, offset);
+        return valleyRepository.searchValleys(keyword, position, tagNames, radius, rating, offset);
     }
 }
