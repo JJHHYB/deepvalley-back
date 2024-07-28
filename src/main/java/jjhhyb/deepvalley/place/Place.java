@@ -1,21 +1,24 @@
 package jjhhyb.deepvalley.place;
 
 import jakarta.persistence.*;
-import jjhhyb.deepvalley.tag.entity.PlaceTag;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.LocalTime;
 
+@Getter
+@SuperBuilder
 @Entity
-@Data
-@NoArgsConstructor
 @DiscriminatorColumn
 @Inheritance(strategy = InheritanceType.JOINED)
+@EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor
 public class Place {
 
     @Id
@@ -26,15 +29,25 @@ public class Place {
 
     private String uuid;
 
+    private String thumbnail;
+
     private String address;
+
+    private String contact;
 
     private String region;
 
     private String content;
 
-    private BigDecimal latitude;
+    private Point location;
 
-    private BigDecimal longitude;
+    private Integer postCount;
+
+    private Double avgRating;
+
+    private LocalTime openingTime;
+
+    private LocalTime closingTime;
 
     @CreatedDate
     private LocalDateTime createdDate;
@@ -42,6 +55,4 @@ public class Place {
     @LastModifiedDate
     private LocalDateTime updatedDate;
 
-//    @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<PlaceTag> placeTags;
 }

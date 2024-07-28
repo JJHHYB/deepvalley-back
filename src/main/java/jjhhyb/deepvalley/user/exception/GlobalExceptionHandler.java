@@ -70,4 +70,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleNicknameAlreadyExistsException(MyProfileException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
+
+    // MyProfile: password is invalid
+    @ExceptionHandler(MyProfileException.InvalidPasswordException.class)
+    public ResponseEntity<String> handleInvalidPasswordException(MyProfileException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(MyProfileException.SamePasswordException.class)
+    public ResponseEntity<String> handleSamePasswordException(MyProfileException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+    }
 }

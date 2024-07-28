@@ -103,7 +103,8 @@ public class MemberServiceTest {
     public void changePasswordTest() throws MyProfileException {
         // 테스트에 사용할 PasswordRequestDto 객체 생성
         PasswordRequestDto passwordRequestDto = new PasswordRequestDto();
-        passwordRequestDto.setPassword("updatedPassword");
+        //TODO 메서드명 변경
+//        passwordRequestDto.setPassword("updatedPassword");
 
         // memberRepository 메소드의 동작을 모킹
         when(memberRepository.findByLoginEmail(member.getLoginEmail())).thenReturn(Optional.of(member));

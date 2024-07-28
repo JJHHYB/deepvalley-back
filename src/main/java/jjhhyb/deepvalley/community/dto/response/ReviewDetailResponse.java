@@ -1,5 +1,7 @@
 package jjhhyb.deepvalley.community.dto.response;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jjhhyb.deepvalley.community.entity.Review;
 import lombok.*;
 
@@ -10,6 +12,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ReviewDetailResponse {
     private String reviewId;
     private String uuid;
