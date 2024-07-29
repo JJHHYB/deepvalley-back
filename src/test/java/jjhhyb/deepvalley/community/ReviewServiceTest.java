@@ -10,11 +10,16 @@ import jjhhyb.deepvalley.community.repository.ReviewRepository;
 import jjhhyb.deepvalley.community.service.ReviewImageService;
 import jjhhyb.deepvalley.community.service.ReviewService;
 import jjhhyb.deepvalley.community.service.ReviewTagService;
+import jjhhyb.deepvalley.image.ImageService;
+import jjhhyb.deepvalley.image.ImageType;
 import jjhhyb.deepvalley.place.Place;
 import jjhhyb.deepvalley.place.PlaceRepository;
 import jjhhyb.deepvalley.tag.ReviewTagRepository;
+import jjhhyb.deepvalley.testObject.TestObjectMember;
+import jjhhyb.deepvalley.testObject.TestObjectPlace;
 import jjhhyb.deepvalley.user.entity.Member;
 import jjhhyb.deepvalley.user.repository.MemberRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -22,13 +27,17 @@ import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
@@ -49,6 +58,9 @@ public class ReviewServiceTest {
     private ReviewTagService reviewTagService;
 
     @Mock
+    private ImageService imageService;
+
+    @Mock
     private ReviewImageRepository reviewImageRepository;
 
     @Mock
@@ -65,158 +77,196 @@ public class ReviewServiceTest {
 
     @Test
     @DisplayName("[Create] 사용자 리뷰 작성")
-    void createReviewTest() {
-        // Given
-        String userId = "test@example.com";
+    public void testCreateReviewWithExistingMemberAndPlace() {
+
+        // Given: 테스트를 위한 데이터 설정
+        String userId = "existingUser";
+        String placeId = "existingPlaceId";
+
         ReviewPostRequest request = ReviewPostRequest.builder()
-                .title("Test Title")
+                .title("Great place!")
                 .rating("FIVE")
-                .content("Test Content")
-                .visitedDate("2023-07-18")
+                .content("Loved it!")
+                .visitedDate("2024-08-01")
                 .privacy("PUBLIC")
-                .placeId("123")
-                .tagNames(List.of("캠핑", "주차가능"))
+                .placeId(placeId)
+                .tagNames(Arrays.asList("fun", "relaxing"))
                 .build();
 
-        Member member = new Member();
-        member.setMemberId(1L);
+        List<MultipartFile> imageFiles = Arrays.asList(
+                new MockMultipartFile("file1", "file1.jpg", "image/jpeg", "file1 content".getBytes()),
+                new MockMultipartFile("file2", "file2.jpg", "image/jpeg", "file2 content".getBytes())
+        );
 
-        Place place = Place.builder().placeId(1L).build();
+        Member existingMember = TestObjectMember.createMemberWithUuid(userId);
+        Place existingPlace = TestObjectPlace.createPlaceWithUuid(placeId);
+
 
         Review review = Review.builder()
-                .uuid(UUID.randomUUID().toString())
+                .reviewId(1L)
+                .member(existingMember)
+                .place(existingPlace)
                 .title(request.getTitle())
-                .rating(ReviewRating.FIVE)
+                .rating(ReviewRating.valueOf(request.getRating()))
                 .content(request.getContent())
                 .visitedDate(LocalDate.parse(request.getVisitedDate()))
-                .privacy(ReviewPrivacy.PUBLIC)
-                .member(member)
-                .place(place)
+                .privacy(ReviewPrivacy.valueOf(request.getPrivacy()))
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
                 .build();
 
-        // Mockito를 사용하여 의존성 주입 객체의 동작을 설정
-        // memberRepository에서 userId로 사용자를 찾을 때, 설정한 member를 반환
-        when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(member));
-        // placeRepository에서 ID로 장소를 찾을 때, 설정한 place를 반환
-        when(placeRepository.findById(anyLong())).thenReturn(Optional.of(place));
-        // reviewRepository에서 Review 객체를 저장할 때, 설정한 review를 반환
+        // When: Mocking 데이터 설정
+        when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(existingMember));
+        when(placeRepository.findByUuid(placeId)).thenReturn(Optional.of(existingPlace));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
-        // reviewImageService에서 이미지 처리 요청 시 빈 리스트를 반환
-        when(reviewImageService.processImages(anyList(), any(Review.class))).thenReturn(Collections.emptyList());
-        // reviewTagService에서 태그 처리 요청 시 빈 리스트를 반환
-        when(reviewTagService.processTags(anyList(), any(Review.class))).thenReturn(Collections.emptyList());
 
-        // When
-        // ReviewService의 createReview 메서드를 호출하여 실제 리뷰 생성 작업 수행
-//        ReviewDetailResponse response = reviewService.createReview(request, userId);
+        // 이미지 업로드 및 처리 Mock 설정
+        List<String> imageUrls = Arrays.asList("http://image.url/1", "http://image.url/2");
+        when(imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW)).thenReturn(imageUrls);
+        when(reviewImageService.processImages(imageUrls, review)).thenReturn(new ArrayList<>());
+
+        // 태그 처리 Mock 설정
+        when(reviewTagService.processTags(request.getTagNames(), review)).thenReturn(new ArrayList<>());
+
+        // When: 리뷰 생성 서비스 호출
+        ReviewDetailResponse response = reviewService.createReview(request, imageFiles, userId);
+
+        // Then
+        assertNotNull(response);
+        verify(reviewRepository, times(3)).save(any(Review.class));
+        verify(reviewImageService).processImages(imageUrls, review);
+        verify(reviewTagService).processTags(request.getTagNames(), review);
 
         // Log results
-//        log.info("Created ReviewResponse: {}", response);
-//        log.info("Title: {}", response.getTitle());
-//        log.info("Rating: {}", response.getRating());
-//        log.info("Content: {}", response.getContent());
-//        log.info("Visited Date: {}", response.getVisitedDate());
-//        log.info("Privacy: {}", response.getPrivacy());
-//
-//        // Then
-//        assertThat(response).isNotNull();
-//        assertThat(response.getTitle()).isEqualTo(request.getTitle());
-//        assertThat(response.getRating()).isEqualTo(request.getRating());
-//        assertThat(response.getContent()).isEqualTo(request.getContent());
-//        assertThat(response.getVisitedDate()).isEqualTo(request.getVisitedDate());
-//        assertThat(response.getPrivacy()).isEqualTo(request.getPrivacy());
+        log.info("Created ReviewResponse");
+        log.info("title: {}", response.getTitle());
     }
 
     @Test
     @DisplayName("[Update] 사용자 리뷰 수정")
-    void updateReviewTest() {
+    public void testUpdateReviewWithExistingMemberAndPlace() {
 
-        // Given
-        String reviewId = "1L";
-        String userId = "test@example.com";
+        // Given: 테스트를 위한 데이터 설정
+        String reviewUUID = "testReview";
+        String userId = "existingUser";
+        String placeId = "existingPlaceId";
+
         ReviewPostRequest request = ReviewPostRequest.builder()
-                .title("Update Title")
+                .title("Updated title!")
                 .rating("FOUR")
-                .content("Update Content")
-                .visitedDate("2023-07-18")
-                .privacy("PUBLIC")
+                .content("Updated content!")
+                .visitedDate("2024-08-02")
+                .privacy("PRIVATE")
+                .placeId(placeId)
+                .tagNames(Arrays.asList("exciting", "cozy"))
                 .build();
 
-        Member member = new Member();
-        member.setMemberId(1L);
+        List<MultipartFile> imageFiles = new ArrayList<>(); // 이미지 파일 없음
 
-        Review review = Review.builder()
-                .uuid(reviewId)
-                .title("Test Title")
+        Member existingMember = TestObjectMember.createMemberWithUuid(userId);
+        Place existingPlace = TestObjectPlace.createPlaceWithUuid(placeId);
+
+        Review existingReview = Review.builder()
+                .reviewId(1L)
+                .uuid(reviewUUID)
+                .member(existingMember)
+                .place(existingPlace)
+                .title("Original title")
                 .rating(ReviewRating.FIVE)
-                .content("Test Content")
-                .visitedDate(LocalDate.now())
+                .content("Original content")
+                .visitedDate(LocalDate.parse("2024-08-01"))
                 .privacy(ReviewPrivacy.PUBLIC)
-                .member(member)
-                .place(new Place())
-                .reviewImages(new ArrayList<>())
-                .reviewTags(new ArrayList<>())
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
+                .reviewImages(new ArrayList<>())
+                .reviewTags(new ArrayList<>())
                 .build();
 
-        when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(member));
-        when(reviewRepository.save(any(Review.class))).thenReturn(review);
-        when(reviewImageService.processImages(anyList(), any(Review.class))).thenReturn(Collections.emptyList());
-        when(reviewTagService.processTags(anyList(), any(Review.class))).thenReturn(Collections.emptyList());
+        Review updatedReview = Review.builder()
+                .reviewId(1L)
+                .uuid(reviewUUID)
+                .member(existingMember)
+                .place(existingPlace)
+                .title(request.getTitle())
+                .rating(ReviewRating.valueOf(request.getRating()))
+                .content(request.getContent())
+                .visitedDate(LocalDate.parse(request.getVisitedDate()))
+                .privacy(ReviewPrivacy.valueOf(request.getPrivacy()))
+                .createdDate(existingReview.getCreatedDate())
+                .updatedDate(LocalDateTime.now()) // Updated date should be current time
+                .reviewImages(new ArrayList<>()) // No images to update
+                .reviewTags(new ArrayList<>()) // No tags to update
+                .build();
 
-        // When
-//        ReviewDetailResponse response = reviewService.updateReview(reviewId, request, userId);
-//
-//        // Log results
-//        log.info("ReviewResponse: {}", response);
-//        log.info("Title: {}", response.getTitle());
-//        log.info("Rating: {}", response.getRating());
-//        log.info("Content: {}", response.getContent());
-//
-//        // Then
-//        assertThat(response).isNotNull();
-//        assertThat(response.getTitle()).isEqualTo(request.getTitle());
-//        assertThat(response.getRating()).isEqualTo(request.getRating());
+        // When: Mocking 데이터 설정
+        when(reviewRepository.findByUuid(reviewUUID)).thenReturn(Optional.of(existingReview));
+        when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(existingMember));
+        when(placeRepository.findByUuid(placeId)).thenReturn(Optional.of(existingPlace));
+        when(reviewRepository.save(any(Review.class))).thenReturn(updatedReview);
+
+        // When: 리뷰 수정 서비스 호출
+        ReviewDetailResponse response = reviewService.updateReview(reviewUUID, request, imageFiles, userId);
+
+        // Then
+        assertNotNull(response);
+        verify(reviewRepository).save(any(Review.class)); // Save method should be called once
+
+        // Log results
+        log.info("Updated ReviewResponse");
+        log.info("Review ID: {}", response.getReviewId());
+        log.info("Title: {}", response.getTitle());
+        log.info("Content: {}", response.getContent());
+        log.info("Visited Date: {}", response.getVisitedDate());
+        log.info("Privacy: {}", response.getPrivacy());
+        log.info("Place ID: {}", response.getPlaceId());
+        log.info("Created Date: {}", response.getCreatedDate());
+        log.info("Updated Date: {}", response.getUpdatedDate());
+        log.info("Image URLs: {}", response.getImageUrls()); // Should be empty or null
+        log.info("Tag Names: {}", response.getTagNames()); // Should be updated or empty
     }
 
     @Test
     @DisplayName("[Delete] 사용자 리뷰 삭제")
-    void deleteReviewTest() {
-        // Given
-        String reviewId = "1L";
-        String userId = "test@example.com";
+    public void testDeleteReviewWithExistingMember() {
 
-        Member member = new Member();
-        member.setMemberId(1L);
+        // Given: 테스트를 위한 데이터 설정
+        String reviewId = "testReview";
+        String userId = "existingUser";
 
-        Review review = Review.builder()
+        Member existingMember = TestObjectMember.createMemberWithUuid(userId);
+        Place existingPlace = TestObjectPlace.createPlaceWithUuid("existingPlaceId");
+
+        Review existingReview = Review.builder()
+                .reviewId(1L)
                 .uuid(reviewId)
-                .title("Test Title")
+                .member(existingMember)
+                .place(existingPlace)
+                .title("Review Title")
                 .rating(ReviewRating.FIVE)
-                .content("Test Content")
-                .visitedDate(LocalDate.now())
+                .content("Review Content")
+                .visitedDate(LocalDate.parse("2024-08-01"))
                 .privacy(ReviewPrivacy.PUBLIC)
-                .member(member)
-                .place(new Place())
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
                 .build();
 
-        when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(member));
+        // Mock the repository and service calls
+        when(reviewRepository.findByUuid(reviewId)).thenReturn(Optional.of(existingReview));
+        when(memberRepository.findByLoginEmail(userId)).thenReturn(Optional.of(existingMember));
 
-        // When
+        doNothing().when(reviewRepository).delete(any(Review.class));
+        doNothing().when(reviewImageService).deleteAll(anyList());
+        doNothing().when(reviewTagService).deleteAll(anyList());
+
+        // When: 리뷰 삭제 서비스 호출
         reviewService.deleteReview(reviewId, userId);
 
-        // Log results
-        log.info("삭제된 ReviewID : {}", reviewId);
-
         // Then
-        verify(reviewRepository, times(1)).delete(review);
-        verify(reviewImageService, times(1)).deleteAll(anyList());
-        verify(reviewTagService, times(1)).deleteAll(anyList());
+        verify(reviewRepository).findByUuid(reviewId); // 리뷰 조회
+        verify(reviewRepository).delete(existingReview); // 리뷰 삭제
+
+        // Log results
+        log.info("Review with ID : {}", reviewId);
     }
 
     @Test
@@ -236,7 +286,7 @@ public class ReviewServiceTest {
         List<PlaceImageResponse> responses = reviewService.searchReviewImage(placeId);
 
         //  Log results
-        log.info("placeID({})에 대한 이미지 : {}", placeId, responses);
+        log.info("placeID({})에 대한 이미지 : {}", placeId, responses.get(0).getImageUrls());
 
         // Then
         assertThat(responses).hasSize(1);
@@ -271,7 +321,7 @@ public class ReviewServiceTest {
         ReviewsResponse response = reviewService.getPlaceReviews(placeId);
 
         // Log results
-        log.info("placeID({})에 대한 리뷰 : {}", placeId, response);
+        log.info("placeID({})에 대한 리뷰 : {}", placeId, response.getReviews().get(0).getTitle());
 
         // Then
         assertThat(response).isNotNull();
@@ -290,7 +340,7 @@ public class ReviewServiceTest {
         Member member = new Member();
         Review review = Review.builder()
                 .reviewId(1L)
-                .title("Test Title")
+                .title("Test Title~~")
                 .rating(ReviewRating.FIVE)
                 .content("Test Content")
                 .visitedDate(LocalDate.now())
@@ -307,7 +357,7 @@ public class ReviewServiceTest {
         ReviewDetailResponse response = reviewService.getReviewDetail(reviewId);
 
         //Log results
-        log.info("reviewID({})에 대한 상세 조회 : {}", reviewId, response);
+        log.info("reviewID({})에 대한 상세 조회 : {}", reviewId, response.getTitle());
 
         // Then
         assertThat(response).isNotNull();
