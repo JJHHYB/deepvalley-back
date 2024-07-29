@@ -1,5 +1,6 @@
 package jjhhyb.deepvalley.user.service;
 
+import jjhhyb.deepvalley.community.repository.ReviewRepository;
 import jjhhyb.deepvalley.image.ImageService;
 import jjhhyb.deepvalley.image.ImageType;
 import jjhhyb.deepvalley.user.dto.LoginRequestDto;
@@ -19,10 +20,12 @@ import java.util.Optional;
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final ReviewRepository reviewRepository;
     private final ImageService imageService;
 
-    public MemberService(MemberRepository memberRepository, ImageService imageService) {
+    public MemberService(MemberRepository memberRepository, ReviewRepository reviewRepository, ImageService imageService) {
         this.memberRepository = memberRepository;
+        this.reviewRepository = reviewRepository;
         this.imageService = imageService;
     }
 
@@ -123,10 +126,17 @@ public class MemberService {
         if (!authName.equals(loginRequestDto.getLoginEmail())) {
             throw new MyProfileException.UnauthorizedAccessException("Invalid token");
         }
+
         // 아이디, 비밀번호 체크
-        Optional<Member> member = memberRepository.findByLoginEmailAndPassword(loginRequestDto.getLoginEmail(), loginRequestDto.getPassword());
-        if (member.isPresent()) {
-            memberRepository.delete(member.get());
+        Optional<Member> optionalMember = memberRepository.findByLoginEmailAndPassword(loginRequestDto.getLoginEmail(), loginRequestDto.getPassword());
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+
+            // review 테이블에서 해당 member_id를 참조하는 행 삭제
+            reviewRepository.deleteByMember(member);
+
+            // member 테이블에서 회원 삭제
+            memberRepository.deleteById(member.getMemberId());
         } else {
             throw new MyProfileException.ProfileNotFoundException("Invalid loginEmail or password. : " + authName);
         }
