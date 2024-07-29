@@ -58,7 +58,7 @@ public class ReviewService {
         // 생성한 Review 엔티티 데이터베이스에 저장
         Review savedReview = reviewRepository.save(review);
 
-        if (imageFiles != null) {
+        if (imageFiles != null && !imageFiles.isEmpty()) {
             // 이미지 파일 업로드 및 URL 생성
             List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
 
@@ -86,7 +86,7 @@ public class ReviewService {
         // 리뷰 엔티티 업데이트
         updateReviewEntity(updateReview, request);
 
-        if (imageFiles != null) {
+        if (imageFiles != null && !imageFiles.isEmpty()) {
             // 이미지 파일 업로드 및 URL 생성
             List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
 
