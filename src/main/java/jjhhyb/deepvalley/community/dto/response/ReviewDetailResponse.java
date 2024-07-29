@@ -28,7 +28,7 @@ public class ReviewDetailResponse {
     private String updatedDate;
     private List<String> imageUrls;
     private List<String> tagNames;
-
+    private String profileImageUrl;
     public static ReviewDetailResponse from(Review review) {
         return ReviewDetailResponse.builder()
                 .reviewId(String.valueOf(review.getReviewId()))
@@ -49,6 +49,7 @@ public class ReviewDetailResponse {
                 .tagNames(review.getReviewTags().stream()
                         .map(reviewTag -> reviewTag.getTag().getName())
                         .collect(Collectors.toList()))
+                .profileImageUrl(review.getMember().getProfileImageUrl())
                 .build();
     }
 }
