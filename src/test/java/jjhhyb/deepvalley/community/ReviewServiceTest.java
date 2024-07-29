@@ -215,14 +215,6 @@ public class ReviewServiceTest {
         log.info("Updated ReviewResponse");
         log.info("Review ID: {}", response.getReviewId());
         log.info("Title: {}", response.getTitle());
-        log.info("Content: {}", response.getContent());
-        log.info("Visited Date: {}", response.getVisitedDate());
-        log.info("Privacy: {}", response.getPrivacy());
-        log.info("Place ID: {}", response.getPlaceId());
-        log.info("Created Date: {}", response.getCreatedDate());
-        log.info("Updated Date: {}", response.getUpdatedDate());
-        log.info("Image URLs: {}", response.getImageUrls()); // Should be empty or null
-        log.info("Tag Names: {}", response.getTagNames()); // Should be updated or empty
     }
 
     @Test
