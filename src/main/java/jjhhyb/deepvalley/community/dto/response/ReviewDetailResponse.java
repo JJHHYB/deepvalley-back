@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jjhhyb.deepvalley.community.entity.Review;
 import lombok.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,7 +16,6 @@ import java.util.stream.Collectors;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ReviewDetailResponse {
     private String reviewId;
-    private String uuid;
     private String title;
     private String rating;
     private String content;
@@ -31,8 +31,7 @@ public class ReviewDetailResponse {
     private String profileImageUrl;
     public static ReviewDetailResponse from(Review review) {
         return ReviewDetailResponse.builder()
-                .reviewId(String.valueOf(review.getReviewId()))
-                .uuid(String.valueOf(review.getUuid()))
+                .reviewId(String.valueOf(review.getUuid()))
                 .title(review.getTitle())
                 .rating(review.getRating().name())
                 .content(review.getContent())
@@ -43,9 +42,9 @@ public class ReviewDetailResponse {
                 .valleyName(review.getPlace().getName())
                 .createdDate(String.valueOf(review.getCreatedDate()))
                 .updatedDate(String.valueOf(review.getUpdatedDate()))
-                .imageUrls(review.getReviewImages().stream()
+                .imageUrls((review.getReviewImages() != null ? review.getReviewImages().stream()
                         .map(reviewImage -> reviewImage.getImage().getImageUrl())
-                        .collect(Collectors.toList()))
+                        .collect(Collectors.toList()) : Collections.emptyList()))
                 .tagNames(review.getReviewTags().stream()
                         .map(reviewTag -> reviewTag.getTag().getName())
                         .collect(Collectors.toList()))
