@@ -30,7 +30,7 @@ public class PlaceMapperTests {
                 .uuid("sampleId")
                 .thumbnail("someURL")
                 .address("someAddress")
-                .zipcode(111)
+                .zipcode("111")
                 .tel("010")
                 .site("a.com")
                 .openingHours("10:00~19:00")
@@ -61,7 +61,7 @@ public class PlaceMapperTests {
         assertEquals(5, response.getMaxDepth());
         assertEquals(2, response.getAvgDepth());
         assertEquals("[A, B]", response.getTagNames().toString());
-        assertEquals(111, response.getZipcode());
+        assertEquals("111", response.getZipcode());
         assertEquals("010", response.getTel());
         assertEquals("a.com", response.getSite());
         assertEquals("10:00~19:00", response.getOpeningHours());

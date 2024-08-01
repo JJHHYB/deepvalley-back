@@ -32,7 +32,7 @@ public class Place {
 
     private String address;
 
-    private Integer zipcode;
+    private String zipcode;
 
     private String tel;
 

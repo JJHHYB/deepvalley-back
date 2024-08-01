@@ -26,7 +26,7 @@ public class ValleyQueryDTO {
 
     private String address;
 
-    private Integer zipcode;
+    private String zipcode;
 
     private String tel;
 
