@@ -30,10 +30,10 @@ public class RecommendService {
                 .collect(Collectors.groupingBy(Review::getPlace,
                         Collectors.averagingDouble(review -> review.getRating().getRating())));
 
-        // 평점이 높은 순으로 정렬하고 상위 10개 계곡을 선택
+        // 평점이 높은 순으로 정렬하고 상위 5개 계곡을 선택
         return placeAvgRatingMap.entrySet().stream()
                 .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
-                .limit(10)
+                .limit(5)
                 .map(entry -> {
                     Place place = entry.getKey();
                     List<Review> reviews = recentReviews.stream()
