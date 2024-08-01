@@ -35,6 +35,15 @@ CLOUD_AWS_REGION_STATIC=$(yq '.CLOUD_AWS_REGION_STATIC' ./secrets.yml)
 CLOUD_AWS_CREDENTIALS_ACCESS_KEY=$(yq '.CLOUD_AWS_CREDENTIALS_ACCESS_KEY' ./secrets.yml)
 CLOUD_AWS_CREDENTIALS_SECRET_KEY=$(yq '.CLOUD_AWS_CREDENTIALS_SECRET_KEY' ./secrets.yml)
 CLOUD_AWS_S3_BUCKET=$(yq '.CLOUD_AWS_S3_BUCKET' ./secrets.yml)
+JWT_SECRETKEY=$(yq '.JWT_SECRETKEY' ./secrets.yml)
+JWT_EXPIRETIME=$(yq '.JWT_EXPIRETIME' ./secrets.yml)
+KAKAO_CLIENT_ID=$(yq '.KAKAO_CLIENT_ID' ./secrets.yml)
+KAKAO_REDIRECT_URI=$(yq '.KAKAO_REDIRECT_URI' ./secrets.yml)
+SWAGGER_PRODUCTION_URL=$(yq '.SWAGGER_PRODUCTION_URL' ./secrets.yml)
+SWAGGER_DEVELOPMENT_URL=$(yq '.SWAGGER_DEVELOPMENT_URL' ./secrets.yml)
+MYSQL_URL=$(yq '.MYSQL_URL' ./secrets.yml)
+MYSQL_USERNAME=$(yq '.MYSQL_USERNAME' ./secrets.yml)
+MYSQL_PASSWORD=$(yq '.MYSQL_PASSWORD' ./secrets.yml)
 
 echo "버킷 이름 : $CLOUD_AWS_S3_BUCKET"
 echo "버킷 지역 : $CLOUD_AWS_REGION_STATIC"
@@ -44,6 +53,15 @@ CMD="nohup java -jar $JAR_NAME \
                  --cloud.aws.region.static=${CLOUD_AWS_REGION_STATIC} \
                  --cloud.aws.credentials.accessKey=${CLOUD_AWS_CREDENTIALS_ACCESS_KEY} \
                  --cloud.aws.credentials.secretKey=${CLOUD_AWS_CREDENTIALS_SECRET_KEY} \
+                 --jwt.secretkey=${JWT_SECRETKEY} \
+                 --jwt.expiretime=${JWT_EXPIRETIME} \
+                 --oauth.kakao.client-id=${KAKAO_CLIENT_ID} \
+                 --oauth.kakao.redirect-uri=${KAKAO_REDIRECT_URI} \
+                 --swagger.production.url=${SWAGGER_PRODUCTION_URL} \
+                 --swagger.development.url=${SWAGGER_DEVELOPMENT_URL} \
+                 --spring.datasource.url=${MYSQL_URL} \
+                 --spring.datasource.username=${MYSQL_USERNAME} \
+                 --spring.datasource.password=${MYSQL_PASSWORD} \
                  --spring.profiles.active=prod \
                  >> /home/ubuntu/app/nohup.out 2>&1 &"
 

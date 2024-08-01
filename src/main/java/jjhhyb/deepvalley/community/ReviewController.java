@@ -37,7 +37,7 @@ public class ReviewController {
     })
     public ReviewDetailResponse createReview(
             @RequestPart("reviewPostRequest") ReviewPostRequest reviewPostRequest,
-            @RequestPart("imageUrls") List<MultipartFile> imageFiles,
+            @RequestPart(value = "imageUrls", required = false) List<MultipartFile> imageFiles,
             Authentication auth
     ) {
         String userId = auth.getName(); // 인증이 되어 있는 UserID

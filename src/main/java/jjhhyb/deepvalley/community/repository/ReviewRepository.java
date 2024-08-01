@@ -2,6 +2,7 @@ package jjhhyb.deepvalley.community.repository;
 
 import jjhhyb.deepvalley.community.entity.Review;
 import jjhhyb.deepvalley.community.entity.ReviewRating;
+import jjhhyb.deepvalley.user.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,4 +15,5 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
 
     Review findByRating(ReviewRating rating);
 
+    void deleteByMember(Member member);
 }
