@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Optional;
 import static org.mockito.Mockito.*;
 
@@ -85,7 +87,7 @@ public class MemberServiceTest {
         when(memberRepository.save(member)).thenReturn(member);
 
         // 테스트할 메소드 호출
-        Optional<Member> updatedMember = memberService.updateMember(profileRequestDto, member.getLoginEmail());
+        Optional<Member> updatedMember = memberService.updateMember(profileRequestDto, null, member.getLoginEmail());
 
         // 예상된 결과를 검증
         assertTrue(updatedMember.isPresent());

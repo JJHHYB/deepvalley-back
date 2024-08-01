@@ -20,6 +20,7 @@ import jjhhyb.deepvalley.testObject.TestObjectMember;
 import jjhhyb.deepvalley.testObject.TestObjectPlace;
 import jjhhyb.deepvalley.user.entity.Member;
 import jjhhyb.deepvalley.user.repository.MemberRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,6 +32,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;

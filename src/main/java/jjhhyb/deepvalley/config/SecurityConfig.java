@@ -46,7 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/member/register", "/api/member/login").permitAll()  // 특정 경로는 모든 사용자에게 허용
                         .requestMatchers("/api/oauth/kakao", "/api/oauth/kakao/token", "/api/oauth/kakao/info").permitAll()                     // 소셜로그인 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll()  // Swagger 경로 허용
-                        .requestMatchers("/api/valley/*/detail", "/api/valley", "/api/facility").permitAll()
+                        .requestMatchers("/api/valley/*/detail", "/api/valley", "/api/facility", "/api/region").permitAll()
+                        .requestMatchers("/actuator", "/actuator/prometheus", "/actuator/**").permitAll()
                         .anyRequest().authenticated()                                                  // 그 외의 모든 요청은 인증된 사용자에게만 허용
                 )
                 .sessionManagement((session) -> session  // 세션 관리 설정

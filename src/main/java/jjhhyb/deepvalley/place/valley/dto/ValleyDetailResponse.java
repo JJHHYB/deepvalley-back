@@ -16,9 +16,11 @@ import java.util.List;
 public class ValleyDetailResponse extends ValleyResponse {
 
     private List<String> tagNames;
-    private String contact;
+    private String tel;
+    private String site;
+    private String zipcode;
     private String content;
-    private LocalTime openingTime;
-    private LocalTime closingTime;
+    private String openingHours;
+    private String extraInfo;
 
 }
