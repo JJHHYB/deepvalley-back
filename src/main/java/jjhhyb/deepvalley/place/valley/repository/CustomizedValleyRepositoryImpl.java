@@ -17,7 +17,7 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
     private EntityManager em;
 
     @Override
-    public List<ValleyResponse> searchValleys(Optional<String> keyword, Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset) {
+    public List<ValleyResponse> searchValleys(Optional<String> keyword, Optional<String> region, Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset) {
         String selectString =
                 "select new jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO(" +
                         "v.placeId, v.name, v.uuid, v.thumbnail, v.address, v.contact, v.region, v.content, v.location, v.postCount, v.avgRating, " +
@@ -30,6 +30,11 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
         rating.ifPresent(value -> {
             joiner.add("v.avgRating>=:rating");
             parameters.put("rating", value);
+        });
+
+        region.ifPresent(value -> {
+            joiner.add("v.region=:region");
+            parameters.put("region", value);
         });
 
         tagNames.ifPresent(value -> {
