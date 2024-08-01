@@ -128,6 +128,6 @@ public class RecommendServiceTest {
         RecommendResponse response = recommendations.get(0);
         assertEquals("Valley A", response.getValleyName(), "Expected valley name to be 'Valley A'");
         assertEquals("existingPlaceId", response.getPlaceId(), "Expected place ID to be 'existingPlaceId'");
-        assertEquals("주차가능, 캠핑가능", String.join(", ", response.getTagNames()), "Expected tag names to match");
+        assertEquals(Arrays.asList("주차가능", "캠핑가능", "수영가능"), response.getTagNames(), "Expected tag names to match");
     }
 }
