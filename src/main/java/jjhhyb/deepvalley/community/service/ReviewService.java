@@ -162,8 +162,15 @@ public class ReviewService {
                     List<String> imageUrls = reviewImageRepository.findByReview_ReviewId(review.getReviewId()).stream()
                             .map(reviewImage -> reviewImage.getImage().getImageUrl())
                             .collect(Collectors.toList());
-                    return new PlaceImageResponse(review.getReviewId(), imageUrls);
+
+                    // 이미지가 있는 리뷰만 필터링
+                    if (!imageUrls.isEmpty()) {
+                        return new PlaceImageResponse(review.getUuid(), review.getTitle(), review.getContent(), imageUrls, review.getMember().getProfileImageUrl());
+                    } else {
+                        return null;
+                    }
                 })
+                .filter(Objects::nonNull) // null 필터링
                 .collect(Collectors.toList());
     }
 

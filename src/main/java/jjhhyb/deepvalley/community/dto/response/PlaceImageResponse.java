@@ -12,6 +12,9 @@ import java.util.List;
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PlaceImageResponse {
-    private Long reviewId;
+    private String reviewId;
+    private String title;
+    private String content;
     private List<String> imageUrls;
+    private String profile_image_url;
 }
