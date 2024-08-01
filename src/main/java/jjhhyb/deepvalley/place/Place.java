@@ -10,7 +10,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Getter
 @SuperBuilder
@@ -33,7 +32,11 @@ public class Place {
 
     private String address;
 
-    private String contact;
+    private String zipcode;
+
+    private String tel;
+
+    private String site;
 
     private String region;
 
@@ -45,9 +48,9 @@ public class Place {
 
     private Double avgRating;
 
-    private LocalTime openingTime;
+    private String openingHours;
 
-    private LocalTime closingTime;
+    private String extraInfo;
 
     @CreatedDate
     private LocalDateTime createdDate;

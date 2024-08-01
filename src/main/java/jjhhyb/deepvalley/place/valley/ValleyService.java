@@ -24,11 +24,12 @@ public class ValleyService {
     }
 
     public List<ValleyResponse> searchValleys(Optional<String> keyword,
+                                              Optional<String> region,
                                               Optional<List<Double>> position,
                                               Optional<List<String>> tagNames,
                                               Long radius,
                                               Optional<Double> rating,
                                               Long offset) {
-        return valleyRepository.searchValleys(keyword, position, tagNames, radius, rating, offset);
+        return valleyRepository.searchValleys(keyword, region, position, tagNames, radius, rating, offset);
     }
 }

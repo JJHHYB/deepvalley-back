@@ -30,14 +30,16 @@ public class PlaceMapperTests {
                 .uuid("sampleId")
                 .thumbnail("someURL")
                 .address("someAddress")
-                .contact("someContact")
+                .zipcode("111")
+                .tel("010")
+                .site("a.com")
+                .openingHours("10:00~19:00")
+                .extraInfo("{a: a}")
                 .region("someRegion")
                 .content("someContent")
                 .location(geometryFactory.createPoint(new Coordinate(1.5, 1.5)))
                 .postCount(10)
                 .avgRating(2.5)
-                .openingTime(LocalTime.NOON)
-                .closingTime(LocalTime.MIDNIGHT)
                 .maxDepth(5)
                 .avgDepth(2)
                 .tagNames("A,B")
@@ -50,18 +52,20 @@ public class PlaceMapperTests {
         assertEquals("sampleId", response.getValleyId());
         assertEquals("someURL", response.getThumbnail());
         assertEquals("someAddress", response.getAddress());
-        assertEquals("someContact", response.getContact());
         assertEquals("someRegion", response.getRegion());
         assertEquals("someContent", response.getContent());
         assertEquals(1.5, response.getLatitude());
         assertEquals(1.5, response.getLongitude());
         assertEquals(10, response.getPostCount());
         assertEquals(2.5, response.getAvgRating());
-        assertEquals(LocalTime.NOON, response.getOpeningTime());
-        assertEquals(LocalTime.MIDNIGHT, response.getClosingTime());
         assertEquals(5, response.getMaxDepth());
         assertEquals(2, response.getAvgDepth());
         assertEquals("[A, B]", response.getTagNames().toString());
+        assertEquals("111", response.getZipcode());
+        assertEquals("010", response.getTel());
+        assertEquals("a.com", response.getSite());
+        assertEquals("10:00~19:00", response.getOpeningHours());
+        assertEquals("{a: a}", response.getExtraInfo());
     }
 
     @Test
@@ -71,14 +75,11 @@ public class PlaceMapperTests {
                 .uuid("sampleId")
                 .thumbnail("someURL")
                 .address("someAddress")
-                .contact("someContact")
                 .region("someRegion")
                 .content("someContent")
                 .location(geometryFactory.createPoint(new Coordinate(1.5, 1.5)))
                 .postCount(10)
                 .avgRating(2.5)
-                .openingTime(LocalTime.NOON)
-                .closingTime(LocalTime.MIDNIGHT)
                 .maxDepth(5)
                 .avgDepth(2)
                 .build();

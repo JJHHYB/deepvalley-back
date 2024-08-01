@@ -27,7 +27,6 @@ public class TestObjectPlace {
                 .closingTime(LocalTime.of(18, 0))
                 .build();
     }
-
     public static Place createPlaceWithUuidAndName(String uuid, String name) {
         return Place.builder()
                 .placeId(1L)
