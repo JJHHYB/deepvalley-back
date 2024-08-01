@@ -33,11 +33,16 @@ public class FacilityIntegrationTests {
     @BeforeAll
     void init() {
         Facility[] facilities = {
-                Facility.builder().name("21990m").location(geometryFactory.createPoint(new Coordinate(-106.04614590227612, 38.63804473972625))).build(),
-                Facility.builder().name("30700m").location(geometryFactory.createPoint(new Coordinate(-105.8940008139609, 38.90771378195941))).build(),
-                Facility.builder().name("52930m").location(geometryFactory.createPoint(new Coordinate(-105.21053655004484, 38.79478077778432))).build(),
-                Facility.builder().name("32080m").location(geometryFactory.createPoint(new Coordinate(-105.44350871652753, 38.55071742654455))).build(),
-                Facility.builder().name("78850m").location(geometryFactory.createPoint(new Coordinate(-104.93596221047001, 38.404625467569495))).build(),};
+                Facility.builder().name("21990m").uuid("A").postCount(0)
+                        .location(geometryFactory.createPoint(new Coordinate(-106.04614590227612, 38.63804473972625))).build(),
+                Facility.builder().name("30700m").uuid("B").postCount(0)
+                        .location(geometryFactory.createPoint(new Coordinate(-105.8940008139609, 38.90771378195941))).build(),
+                Facility.builder().name("52930m").uuid("C").postCount(0)
+                        .location(geometryFactory.createPoint(new Coordinate(-105.21053655004484, 38.79478077778432))).build(),
+                Facility.builder().name("32080m").uuid("D").postCount(0)
+                        .location(geometryFactory.createPoint(new Coordinate(-105.44350871652753, 38.55071742654455))).build(),
+                Facility.builder().name("78850m").uuid("E").postCount(0)
+                        .location(geometryFactory.createPoint(new Coordinate(-104.93596221047001, 38.404625467569495))).build(),};
         //origin -105.78464653173432, 38.64175843889995
         Arrays.stream(facilities).forEach(facilityRepository::save);
     }
