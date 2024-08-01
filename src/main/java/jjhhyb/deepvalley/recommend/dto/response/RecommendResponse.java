@@ -42,7 +42,7 @@ public class RecommendResponse {
         List<String> tagNames = List.of(tagBuilder.toString().split(", "));
 
         return RecommendResponse.builder()
-                .placeId(String.valueOf(place.getPlaceId()))
+                .placeId(String.valueOf(place.getUuid()))
                 .valleyName(place.getName())
                 .address(place.getAddress())
                 .imageUrl(imageUrl)
