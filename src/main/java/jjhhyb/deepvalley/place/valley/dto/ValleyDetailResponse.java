@@ -18,7 +18,7 @@ public class ValleyDetailResponse extends ValleyResponse {
     private List<String> tagNames;
     private String tel;
     private String site;
-    private Integer zipcode;
+    private String zipcode;
     private String content;
     private String openingHours;
     private String extraInfo;
