@@ -11,8 +11,8 @@ import java.util.Optional;
 public interface ValleyRepository extends JpaRepository<Valley, Long>, CustomizedValleyRepository {
 
     @Query(value = "select new jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO(" +
-            "v.placeId, v.name, v.uuid, v.thumbnail, v.address, v.contact, v.region, v.content, v.location, v.postCount, v.avgRating, " +
-            "v.openingTime, v.closingTime, v.createdDate, v.updatedDate, group_concat(t.name), v.maxDepth, v.avgDepth) " +
+            "v.placeId, v.name, v.uuid, v.thumbnail, v.address, v.zipcode, v.tel, v.site, v.region, v.content, v.location, v.postCount, v.avgRating, " +
+            "v.openingHours, v.extraInfo, v.createdDate, v.updatedDate, group_concat(t.name), v.maxDepth, v.avgDepth) " +
             "from Valley v " +
             "left join PlaceTag pt on v.placeId = pt.place.placeId " +
             "left join Tag t on pt.tag.tagId = t.tagId " +
