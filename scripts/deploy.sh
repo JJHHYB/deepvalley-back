@@ -77,12 +77,3 @@ CMD="nohup java -jar $JAR_NAME \
                  >> /home/ubuntu/app/nohup.out 2>&1 &"
 
 eval "$CMD"
-
-# 배포 로그 기록
-if [ -f "/home/ubuntu/app/commit_hash.txt" ]; then
-  echo "> 배포 로그 기록"
-  cat "/home/ubuntu/app/commit_hash.txt" >> "/home/ubuntu/app/deploy.log"
-  echo "Deployment completed with commit $(cat "/home/ubuntu/app/commit_hash.txt")" >> "/home/ubuntu/app/deploy.log"
-else
-  echo "> commit_hash.txt 파일을 찾을 수 없습니다."
-fi
