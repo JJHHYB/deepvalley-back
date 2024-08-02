@@ -17,14 +17,25 @@ public class TestObjectPlace {
                 .name("Test Place")
                 .address("123 Test Street")
                 .thumbnail("http://example.com/thumbnail.jpg")
-                .contact("123-456-7890")
                 .region("Test Region")
                 .content("Test Content")
                 .location(geometryFactory.createPoint(new Coordinate(1.5, 1.5)))
                 .postCount(0)
                 .avgRating(0.0)
-                .openingTime(LocalTime.of(9, 0))
-                .closingTime(LocalTime.of(18, 0))
+                .build();
+    }
+    public static Place createPlaceWithUuidAndName(String uuid, String name) {
+        return Place.builder()
+                .placeId(1L)
+                .uuid(uuid)
+                .name(name)
+                .address("123 Test Street")
+                .thumbnail("http://example.com/thumbnail.jpg")
+                .region("Test Region")
+                .content("Test Content")
+                .location(geometryFactory.createPoint(new Coordinate(1.5, 1.5)))
+                .postCount(0)
+                .avgRating(0.0)
                 .build();
     }
 }

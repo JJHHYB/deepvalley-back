@@ -1,4 +1,4 @@
-package jjhhyb.deepvalley.community.entity;
+package jjhhyb.deepvalley.image;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

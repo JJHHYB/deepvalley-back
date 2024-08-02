@@ -17,11 +17,11 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
     private EntityManager em;
 
     @Override
-    public List<ValleyResponse> searchValleys(Optional<String> keyword, Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset) {
+    public List<ValleyResponse> searchValleys(Optional<String> keyword, Optional<String> region, Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset) {
         String selectString =
                 "select new jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO(" +
-                        "v.placeId, v.name, v.uuid, v.thumbnail, v.address, v.contact, v.region, v.content, v.location, v.postCount, v.avgRating, " +
-                        "v.openingTime, v.closingTime, v.createdDate, v.updatedDate, null, v.maxDepth, v.avgDepth) " +
+                        "v.placeId, v.name, v.uuid, v.thumbnail, v.address, v.zipcode, v.tel, v.site, v.region, v.content, v.location, v.postCount, v.avgRating, " +
+                        "v.openingHours, v.extraInfo, v.createdDate, v.updatedDate, null, v.maxDepth, v.avgDepth) " +
                 "from Valley v ";
         StringBuilder queryString = new StringBuilder(selectString);
         StringJoiner joiner = new StringJoiner(" AND ");
@@ -30,6 +30,11 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
         rating.ifPresent(value -> {
             joiner.add("v.avgRating>=:rating");
             parameters.put("rating", value);
+        });
+
+        region.ifPresent(value -> {
+            joiner.add("v.region=:region");
+            parameters.put("region", value);
         });
 
         tagNames.ifPresent(value -> {

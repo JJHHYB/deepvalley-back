@@ -26,7 +26,11 @@ public class ValleyQueryDTO {
 
     private String address;
 
-    private String contact;
+    private String zipcode;
+
+    private String tel;
+
+    private String site;
 
     private String region;
 
@@ -38,9 +42,9 @@ public class ValleyQueryDTO {
 
     private Double avgRating;
 
-    private LocalTime openingTime;
+    private String openingHours;
 
-    private LocalTime closingTime;
+    private String extraInfo;
 
     private LocalDateTime createdDate;
 
