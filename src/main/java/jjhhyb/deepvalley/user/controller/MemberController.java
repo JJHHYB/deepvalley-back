@@ -50,6 +50,7 @@ public class MemberController {
         member.setLoginEmail(registerRequestDto.getLoginEmail());
         member.setName(registerRequestDto.getName());
         member.setPassword(registerRequestDto.getPassword());
+        member.setLoginDate(LocalDateTime.now());
 
         Member registeredMember = memberService.register(member);
         RegisterResponseDto responseDto = RegisterResponseDto.builder()
