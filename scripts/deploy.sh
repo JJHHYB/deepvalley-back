@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 LOG_FILE="/home/ubuntu/app/deploy.log"
-SECRET_FILE="/home/ubuntu/app/deploy/secrets.yml"
+SECRET_FILE="/home/ubuntu/app/secrets.yml"
 
 # 로그 파일에 기록할 모든 출력 리디렉션 설정
 exec > >(tee -a $LOG_FILE) 2>&1
