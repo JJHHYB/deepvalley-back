@@ -165,7 +165,7 @@ public class ReviewService {
 
                     // 이미지가 있는 리뷰만 필터링
                     if (!imageUrls.isEmpty()) {
-                        return new PlaceImageResponse(review.getUuid(), review.getTitle(), review.getContent(), imageUrls, review.getMember().getProfileImageUrl());
+                        return new PlaceImageResponse(review.getUuid(), review.getTitle(), review.getContent(), review.getVisitedDate(), imageUrls, review.getMember().getProfileImageUrl());
                     } else {
                         return null;
                     }
