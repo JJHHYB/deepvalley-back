@@ -70,20 +70,20 @@ jobs:
       # Secret key 복사
       - name: Setup environment variables
         run: |
-          touch /home/ubuntu/app/secrets.yml
-          echo "CLOUD_AWS_REGION_STATIC: ${{ env.AWS_REGION }}" >> /home/ubuntu/app/secrets.yml
-          echo "CLOUD_AWS_CREDENTIALS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}" >> /home/ubuntu/app/secrets.yml
-          echo "CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}" >> /home/ubuntu/app/secrets.yml
-          echo "CLOUD_AWS_S3_BUCKET: ${{ env.IMAGE_S3_BUCKET_NAME }}" >> /home/ubuntu/app/secrets.yml
-          echo "JWT_SECRETKEY: ${{ secrets.JWT_SECRETKEY }}" >> /home/ubuntu/app/secrets.yml
-          echo "JWT_EXPIRETIME: ${{ secrets.JWT_EXPIRETIME }}" >> /home/ubuntu/app/secrets.yml
-          echo "KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}" >> /home/ubuntu/app/secrets.yml
-          echo "KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}" >> /home/ubuntu/app/secrets.yml
-          echo "MYSQL_URL: ${{ secrets.MYSQL_URL }}" >> /home/ubuntu/app/secrets.yml
-          echo "MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}" >> /home/ubuntu/app/secrets.yml
-          echo "MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}" >> /home/ubuntu/app/secrets.yml
-          echo "SWAGGER_PRODUCTION_URL: ${{ secrets.SWAGGER_PRODUCTION_URL }}" >> /home/ubuntu/app/secrets.yml
-          echo "SWAGGER_DEVELOPMENT_URL: ${{ secrets.SWAGGER_DEVELOPMENT_URL }}" >> /home/ubuntu/app/secrets.yml
+          touch ./deploy/secrets.yml
+          echo "CLOUD_AWS_REGION_STATIC: ${{ env.AWS_REGION }}" >> ./deploy/secrets.yml
+          echo "CLOUD_AWS_CREDENTIALS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}" >> ./deploy/secrets.yml
+          echo "CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}" >> ./deploy/secrets.yml
+          echo "CLOUD_AWS_S3_BUCKET: ${{ env.IMAGE_S3_BUCKET_NAME }}" >> ./deploy/secrets.yml
+          echo "JWT_SECRETKEY: ${{ secrets.JWT_SECRETKEY }}" >> ./deploy/secrets.yml
+          echo "JWT_EXPIRETIME: ${{ secrets.JWT_EXPIRETIME }}" >> ./deploy/secrets.yml
+          echo "KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}" >> ./deploy/secrets.yml
+          echo "KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}" >> ./deploy/secrets.yml
+          echo "MYSQL_URL: ${{ secrets.MYSQL_URL }}" >> ./deploy/secrets.yml
+          echo "MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}" >> ./deploy/secrets.yml
+          echo "MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}" >> ./deploy/secrets.yml
+          echo "SWAGGER_PRODUCTION_URL: ${{ secrets.SWAGGER_PRODUCTION_URL }}" >> ./deploy/secrets.yml
+          echo "SWAGGER_DEVELOPMENT_URL: ${{ secrets.SWAGGER_DEVELOPMENT_URL }}" >> ./deploy/secrets.yml
 
       - name: Make zip file
         run: zip -r ./deepvalley.zip ./deploy
