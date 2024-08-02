@@ -32,9 +32,14 @@ echo "> JAR NAME: $JAR_NAME"
 
 echo "> $JAR_NAME 에 실행권한 추가"
 
-chmod +x $JAR_NAME
+chmod +x "/home/ubuntu/app/$JAR_NAME"
 
 echo "> $JAR_NAME 실행"
+
+if [ ! -f "/home/ubuntu/app/secrets.yml" ]; then
+  echo "Error: secrets.yml 파일을 찾을 수 없습니다."
+  exit 1
+fi
 
 CLOUD_AWS_REGION_STATIC=$(yq '.CLOUD_AWS_REGION_STATIC' ./secrets.yml)
 CLOUD_AWS_CREDENTIALS_ACCESS_KEY=$(yq '.CLOUD_AWS_CREDENTIALS_ACCESS_KEY' ./secrets.yml)
