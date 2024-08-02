@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 LOG_FILE="/home/ubuntu/app/deploy.log"
 SECRET_FILE="/home/ubuntu/app/secrets.yml"
