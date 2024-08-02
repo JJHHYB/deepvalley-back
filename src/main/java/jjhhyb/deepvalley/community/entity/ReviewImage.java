@@ -1,8 +1,7 @@
 package jjhhyb.deepvalley.community.entity;
 
 import jakarta.persistence.*;
-import jjhhyb.deepvalley.community.entity.Review;
-import jjhhyb.deepvalley.community.entity.Image;
+import jjhhyb.deepvalley.image.Image;
 import jjhhyb.deepvalley.entityId.ReviewImageId;
 import lombok.*;
 

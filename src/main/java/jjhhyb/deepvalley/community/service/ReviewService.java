@@ -79,28 +79,52 @@ public class ReviewService {
 
     // 리뷰 업데이트
     @Transactional
-    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, List<MultipartFile> imageFiles,  String userId) {
+    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, List<MultipartFile> imageFiles, String userId) {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
+
+        // 기존 리뷰 이미지 URL 목록 가져오기
+        List<String> existingImageUrls = updateReview.getReviewImages().stream()
+                .map(reviewImage -> reviewImage.getImage().getImageUrl())
+                .toList();
 
         // 리뷰 엔티티 업데이트
         updateReviewEntity(updateReview, request);
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
-            // 이미지 파일 업로드 및 URL 생성
-            List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
+            // 이미지 파일 업로드 및 URL 생성 & 새로운 ReviewImage 객체 생성
+            List<String> newImageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
+            List<ReviewImage> updatedReviewImages = reviewImageService.processImages(newImageUrls, updateReview);
 
-            // 이미지 처리
-            List<ReviewImage> updatedReviewImages = reviewImageService.processImages(imageUrls, updateReview);
+            // 요청된 이미지 URL을 Set으로 변환하여 기존 이미지와 비교
+            Set<String> newImageUrlSet = new HashSet<>(newImageUrls);
 
-            // 기존의 이미지 제거 및 업데이트
+            // 삭제할 이미지 결정: 기존 이미지 중 요청된 이미지 URL에 없는 이미지
+            List<ReviewImage> imagesToDelete = updateReview.getReviewImages().stream()
+                    .filter(existingReviewImage -> !newImageUrlSet.contains(existingReviewImage.getImage().getImageUrl()))
+                    .collect(Collectors.toList());
+
+            // 기존 이미지 삭제
+            if (!imagesToDelete.isEmpty()) {
+                reviewImageService.deleteAll(imagesToDelete);
+            }
+
+            // 새 이미지 추가
             reviewImageService.updateReviewImages(updateReview, updatedReviewImages);
+        } else {
+            // 이미지 파일이 없는 경우: 기존 이미지가 있다면 삭제 처리
+            if (!existingImageUrls.isEmpty()) {
+                List<ReviewImage> imagesToDelete = updateReview.getReviewImages();
+                if (!imagesToDelete.isEmpty()) {
+                    reviewImageService.deleteAll(imagesToDelete);
+                }
+            }
         }
 
         // 태그 처리
         List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
 
-        // 기존의 태그 제거 및 업데이트
+        // 기존 태그 제거 및 업데이트
         reviewTagService.updateReviewTags(updateReview, updatedReviewTags);
 
         // 업데이트된 리뷰 저장
@@ -138,8 +162,15 @@ public class ReviewService {
                     List<String> imageUrls = reviewImageRepository.findByReview_ReviewId(review.getReviewId()).stream()
                             .map(reviewImage -> reviewImage.getImage().getImageUrl())
                             .collect(Collectors.toList());
-                    return new PlaceImageResponse(review.getReviewId(), imageUrls);
+
+                    // 이미지가 있는 리뷰만 필터링
+                    if (!imageUrls.isEmpty()) {
+                        return new PlaceImageResponse(review.getUuid(), review.getTitle(), review.getContent(), review.getVisitedDate(), imageUrls, review.getMember().getProfileImageUrl());
+                    } else {
+                        return null;
+                    }
                 })
+                .filter(Objects::nonNull) // null 필터링
                 .collect(Collectors.toList());
     }
 

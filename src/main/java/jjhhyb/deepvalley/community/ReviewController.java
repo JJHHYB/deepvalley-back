@@ -82,7 +82,7 @@ public class ReviewController {
     }
 
     @GetMapping("/api/valley/{valley-id}/image")
-    @Operation(summary = "리뷰 이미지 검색", description = "특정 계곡에 대한 리뷰 이미지를 검색합니다.")
+    @Operation(summary = "리뷰 이미지 조회", description = "특정 계곡에 대한 리뷰 이미지를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "리뷰 이미지 검색 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PlaceImageResponse.class))),
             @ApiResponse(responseCode = "404", description = "계곡을 찾을 수 없음", content = @Content),
