@@ -1,9 +1,7 @@
 package jjhhyb.deepvalley.image;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -13,7 +11,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,8 +57,24 @@ public class S3Service {
         }
     }
 
-    private String extractFileNameFromUrl(String fileUrl) {
-        String splitStr = ".com/";
-        return fileUrl.substring(fileUrl.lastIndexOf(splitStr) + splitStr.length());
+    public List<String> listFilesInFolder(String folderName) {
+        ListObjectsV2Request request = new ListObjectsV2Request()
+                .withBucketName(bucket)
+                .withPrefix(folderName + "/");
+
+        ListObjectsV2Result result;
+        List<S3ObjectSummary> objects;
+
+        try {
+            result = amazonS3Client.listObjectsV2(request);
+            objects = result.getObjectSummaries();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "폴더의 파일 목록을 가져오는데 실패했습니다.");
+        }
+
+        return objects.stream()
+                .map(obj -> amazonS3Client.getUrl(bucket, obj.getKey()).toString())
+                .filter(url -> !url.endsWith(folderName + "/"))
+                .collect(Collectors.toList());
     }
 }

@@ -97,7 +97,7 @@ public class ReviewService {
 
             // 요청된 이미지 URL을 Set으로 변환하여 기존 이미지와 비교
             Set<String> newImageUrlSet = new HashSet<>(newImageUrls);
-
+          
             // 삭제할 이미지 결정: 기존 이미지 중 요청된 이미지 URL에 없는 이미지
             List<ReviewImage> imagesToDelete = updateReview.getReviewImages().stream()
                     .filter(existingReviewImage -> !newImageUrlSet.contains(existingReviewImage.getImage().getImageUrl()))
@@ -107,7 +107,7 @@ public class ReviewService {
             if (!imagesToDelete.isEmpty()) {
                 reviewImageService.deleteAll(imagesToDelete);
             }
-
+          
             // 새 이미지 추가
             reviewImageService.updateReviewImages(updateReview, updatedReviewImages);
         } else {
