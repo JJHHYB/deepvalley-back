@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 public class BannerServiceTest {
@@ -23,23 +26,14 @@ public class BannerServiceTest {
     @Test
     @DisplayName("[GET] 메인 배너 조회")
     void getBanner() {
-        // Arrange
-        List<String> mockImageUrls = List.of(
-                "https://deep-valley-image.s3.ap-northeast-2.amazonaws.com/banner-images/Group_37.png",
-                "https://deep-valley-image.s3.ap-northeast-2.amazonaws.com/banner-images/Group_41.png",
-                "https://deep-valley-image.s3.ap-northeast-2.amazonaws.com/banner-images/Group_43.png",
-                "https://deep-valley-image.s3.ap-northeast-2.amazonaws.com/banner-images/Group_44.png",
-                "https://deep-valley-image.s3.ap-northeast-2.amazonaws.com/banner-images/Group_46.png"
-        );
+        // given
+        List<String> mockImageUrls = Arrays.asList("url1", "url2", "url3");
+        when(s3Service.listFilesInFolder("banner-images")).thenReturn(mockImageUrls);
 
-        given(s3Service.listFilesInFolder("banner-images")).willReturn(mockImageUrls);
+        // when
+        BannerResponse response = bannerService.getBanner();
 
-        // Act
-        BannerResponse bannerResponse = bannerService.getBanner();
-
-        // Assert
-        assertThat(bannerResponse).isNotNull();
-        assertThat(bannerResponse.getImageUrls()).isNotEmpty();
-        assertThat(bannerResponse.getImageUrls()).containsExactlyElementsOf(mockImageUrls);
+        // then
+        assertEquals(mockImageUrls, response.getImageUrls());
     }
 }
