@@ -33,5 +33,7 @@ public class Member {
     private LocalDateTime loginDate;
 
     private String description;
+
+    private String oauth;
 }
 

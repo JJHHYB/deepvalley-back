@@ -22,6 +22,7 @@ public class ProfileResponseDto {
     private String description;
     private LocalDateTime createdDate;
     private LocalDateTime loginDate;
+    private String oauth;
 
     public static ProfileResponseDto fromMember(Member member) {
         return ProfileResponseDto.builder()
@@ -31,6 +32,7 @@ public class ProfileResponseDto {
                 .description(member.getDescription())
                 .createdDate(member.getCreatedDate())
                 .loginDate(member.getLoginDate())
+                .oauth(member.getOauth())
                 .build();
     }
 }
