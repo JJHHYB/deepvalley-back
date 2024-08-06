@@ -79,7 +79,7 @@ public class MemberController {
 
     // 아이디 찾기
     @PostMapping("/find-id")
-    @Operation(summary = "아이디 찾기", description = "이름과 이메일을 입력하여 아이디를 찾습니다.")
+    @Operation(summary = "아이디 찾기", description = "이름을 활용하여 아이디를 찾습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "아이디 찾기 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FindIdResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(examples = @ExampleObject( value = "User not found" ))),
@@ -96,7 +96,7 @@ public class MemberController {
 
     // 비밀번호 찾기
     @PostMapping("/find-password")
-    @Operation(summary = "비밀번호 찾기", description = "아이디와 이메일을 입력하여 비밀번호를 찾습니다.")
+    @Operation(summary = "비밀번호 찾기", description = "로그인 이메일을 활용하여 임시비밀번호를 찾습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "비밀번호 찾기 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FindPasswordResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(examples = @ExampleObject( value = "Member not found" ))),
