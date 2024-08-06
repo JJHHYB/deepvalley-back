@@ -3,6 +3,7 @@ package jjhhyb.deepvalley.place;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.annotation.CreatedDate;
@@ -43,9 +44,9 @@ public class Place {
     private String content;
 
     private Point location;
-
+    @Setter
     private Integer postCount;
-
+    @Setter
     private Double avgRating;
 
     private String openingHours;
