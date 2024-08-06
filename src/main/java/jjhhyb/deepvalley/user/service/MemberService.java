@@ -146,4 +146,14 @@ public class MemberService {
     public void save(Member member) {
         memberRepository.save(member);
     }
+
+    @Transactional
+    public Optional<Member> findId(String name) {
+        return memberRepository.findByName(name);
+    }
+
+    @Transactional
+    public Optional<Member> findPassword(String loginEmail) {
+        return memberRepository.findByLoginEmail(loginEmail);
+    }
 }
