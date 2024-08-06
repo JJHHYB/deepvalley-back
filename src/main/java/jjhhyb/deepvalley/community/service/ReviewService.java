@@ -64,15 +64,14 @@ public class ReviewService {
 
             // 이미지 처리
             List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, savedReview);
-            // 생성된 리뷰에 이미지를 추가하고, 업데이트된 리뷰를 데이터베이스에 저장
             updateReviewWithImages(savedReview, reviewImages);
         }
 
         // 태그 처리
         List<ReviewTag> reviewTags = reviewTagService.processTags(request.getTagNames(), savedReview);
-        // 생성된 리뷰에 태그를 추가하고, 업데이트된 리뷰를 데이터베이스에 저장
         updateReviewWithTags(savedReview, reviewTags);
 
+        updatePlaceMetrics(savedReview.getPlace().getUuid());
         // 응답 객체로 변환 후 반환
         return ReviewDetailResponse.from(savedReview);
     }
@@ -123,14 +122,12 @@ public class ReviewService {
 
         // 태그 처리
         List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
-
-        // 기존 태그 제거 및 업데이트
         reviewTagService.updateReviewTags(updateReview, updatedReviewTags);
 
         // 업데이트된 리뷰 저장
         reviewRepository.save(updateReview);
 
-        // 응답 객체로 변환 후 반환
+        updatePlaceMetrics(updateReview.getPlace().getUuid());
         return ReviewDetailResponse.from(updateReview);
     }
 
@@ -139,16 +136,16 @@ public class ReviewService {
         // 리뷰 존재 여부 및 작성자 확인
         Review review = validateReviewOwner(reviewId, userId);
 
-        // 리뷰와 연관된 모든 이미지 삭제
+        // 리뷰와 연관된 모든 이미지, 태그 삭제
         List<ReviewImage> reviewImages = reviewImageRepository.findByReview_ReviewId(review.getReviewId());
         reviewImageService.deleteAll(reviewImages);
-
-        // 리뷰와 연관된 모든 태그 삭제
         List<ReviewTag> reviewTags = reviewTagService.findByReviewId(review.getReviewId());
         reviewTagService.deleteAll(reviewTags);
 
         // 리뷰 삭제
         reviewRepository.delete(review);
+
+        updatePlaceMetrics(review.getPlace().getUuid());
     }
 
     @Transactional(readOnly = true)
@@ -301,5 +298,13 @@ public class ReviewService {
         review.setVisitedDate(parseVisitedDate(request.getVisitedDate()));
         review.setPrivacy(ReviewPrivacy.valueOf(request.getPrivacy()));
         review.setUpdatedDate(LocalDateTime.now());
+    }
+    private void updatePlaceMetrics(String placeUuid) {
+        Double averageRating = placeRepository.findAverageRatingByPlace(placeUuid);
+        Integer reviewCount = placeRepository.countByPlace(placeUuid);
+        Place place = placeRepository.findByUuid(placeUuid).orElseThrow();
+        place.setAvgRating(averageRating);
+        place.setPostCount(reviewCount);
+        placeRepository.save(place);
     }
 }
