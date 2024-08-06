@@ -78,3 +78,5 @@ CMD="nohup java -jar $JAR_NAME \
                  >> /home/ubuntu/app/nohup.out 2>&1 &"
 
 eval "$CMD"
+
+echo $(pwd)
