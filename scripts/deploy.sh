@@ -81,3 +81,4 @@ eval "$CMD"
 
 
 echo $(pwd)
+echo $(ls)
