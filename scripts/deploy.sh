@@ -79,6 +79,10 @@ CMD="nohup java -jar $JAR_NAME \
 
 eval "$CMD"
 
+<<<<<<< HEAD
 
 echo $(pwd)
 echo $(ls)
+=======
+echo $(pwd)
+>>>>>>> 1052d74021857e358ff9bf0a8f5159ffd8747469
