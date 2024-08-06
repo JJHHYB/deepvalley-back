@@ -80,3 +80,4 @@ CMD="nohup java -jar $JAR_NAME \
 eval "$CMD"
 
 echo $(pwd)
+echo $(ls)
