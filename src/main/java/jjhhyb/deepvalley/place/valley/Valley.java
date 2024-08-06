@@ -16,8 +16,4 @@ public class Valley extends Place {
 
     private Integer avgDepth;
 
-    private Boolean canCamping;
-
-    private Boolean canParking;
-
 }
