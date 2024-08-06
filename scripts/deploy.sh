@@ -80,6 +80,3 @@ CMD="nohup java -jar $JAR_NAME \
 eval "$CMD"
 
 echo $(pwd)
-
-# Spring Boot 실행 로그
-tail -f nohup.out
