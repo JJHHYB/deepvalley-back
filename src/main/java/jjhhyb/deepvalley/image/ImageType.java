@@ -1,5 +1,5 @@
 package jjhhyb.deepvalley.image;
 
 public enum ImageType {
-    REVIEW, PROFILE
+    REVIEW, PROFILE, SUGGEST
 }
