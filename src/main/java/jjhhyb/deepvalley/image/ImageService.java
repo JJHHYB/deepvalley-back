@@ -13,6 +13,7 @@ public class ImageService {
     private final S3Service s3Service;
     private static final String REVIEW_IMAGE_FOLDER = "review-images";
     private static final String PROFILE_IMAGE_FOLDER = "profile-images";
+    private static final String SUGGEST_IMAGE_FOLDER = "suggest-images";
 
     // 이미지 파일을 S3에 업로드하고 URL 리스트를 반환
     public List<String> uploadImagesAndGetUrls(List<MultipartFile> imageFiles, ImageType imageType) {
@@ -32,6 +33,7 @@ public class ImageService {
         return switch (imageType) {
             case REVIEW -> REVIEW_IMAGE_FOLDER;
             case PROFILE -> PROFILE_IMAGE_FOLDER;
+            case SUGGEST -> SUGGEST_IMAGE_FOLDER;
         };
     }
 }
