@@ -143,7 +143,34 @@ public class MemberService {
     }
 
     @Transactional
+    public void deleteMember(String authName) throws MyProfileException {
+       // 아이디, 비밀번호 체크
+        Optional<Member> optionalMember = memberRepository.findByLoginEmail(authName);
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+
+            // review 테이블에서 해당 member_id를 참조하는 행 삭제
+            reviewRepository.deleteByMember(member);
+
+            // member 테이블에서 회원 삭제
+            memberRepository.deleteById(member.getMemberId());
+        } else {
+            throw new MyProfileException.ProfileNotFoundException("Invalid loginEmail or password. : " + authName);
+        }
+    }
+
+    @Transactional
     public void save(Member member) {
         memberRepository.save(member);
+    }
+
+    @Transactional
+    public Optional<Member> findId(String name) {
+        return memberRepository.findByName(name);
+    }
+
+    @Transactional
+    public Optional<Member> findPassword(String loginEmail) {
+        return memberRepository.findByLoginEmail(loginEmail);
     }
 }

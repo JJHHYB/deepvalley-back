@@ -13,7 +13,9 @@ import jjhhyb.deepvalley.user.oauth.provider.kakao.KakaoTokenDto;
 import jjhhyb.deepvalley.user.oauth.provider.kakao.KakaoUserInfoDto;
 import jjhhyb.deepvalley.user.service.KakaoLoginService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import jjhhyb.deepvalley.user.service.MemberService;
 
 @RestController
 @RequestMapping("/api/oauth")
@@ -21,9 +23,11 @@ import org.springframework.web.bind.annotation.*;
 public class KakaoLoginController {
 
     private final KakaoLoginService kakaoLoginService;
+    private final MemberService memberService;
 
-    public KakaoLoginController(KakaoLoginService kakaoLoginService) {
+    public KakaoLoginController(KakaoLoginService kakaoLoginService, MemberService memberService) {
         this.kakaoLoginService = kakaoLoginService;
+        this.memberService = memberService;
     }
 
     @GetMapping("/kakao")
@@ -59,5 +63,17 @@ public class KakaoLoginController {
     public ResponseEntity<KakaoUserInfoDto> kakaoUserInfo(
             @Parameter(description = "카카오 액세스 토큰", required = true) @RequestParam("token") String accessToken) throws Exception {
         return ResponseEntity.ok(kakaoLoginService.getUserInfo(accessToken));
+    }
+
+    @DeleteMapping("/kakao")
+    @Operation(summary = "로그인한 카카오 계정정보 삭제", description = "카카오 계정정보를 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "인증정보 삭제 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "500", description = "카카오 서버 오류", content = @Content(examples = @ExampleObject( value = "Kakao Server Error" )))
+    })
+    public ResponseEntity<String> deleteKakaoMember(
+            @Parameter(description = "카카오 액세스 토큰", required = true) Authentication auth) throws Exception {
+        memberService.deleteMember(auth.getName());
+        return ResponseEntity.ok().build();
     }
 }
