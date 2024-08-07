@@ -108,6 +108,7 @@ public class KakaoLoginService {
             newMember.setProfileImageUrl(kakaoProfileImageUrl);
             newMember.setCreatedDate(kakaoConnectedDate);
             newMember.setLoginDate(LocalDateTime.now());
+            newMember.setOauth("KAKAO");
             memberRepository.save(newMember);
         }
 
