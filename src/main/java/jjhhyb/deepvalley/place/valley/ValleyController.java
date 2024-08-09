@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jjhhyb.deepvalley.place.PlaceSortType;
 import jjhhyb.deepvalley.place.valley.dto.ValleyDetailResponse;
 import jjhhyb.deepvalley.place.valley.dto.ValleyResponse;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,9 @@ public class ValleyController {
                                                               @RequestParam("tag_names") Optional<List<String>> tagNames,
                                                               @RequestParam(defaultValue = "10000") Long radius,
                                                               @RequestParam(required = false) Optional<Double> rating,
+                                                              @RequestParam("sort_type") Optional<PlaceSortType> sortType,
                                                               @RequestParam(defaultValue = "0") Long offset) {
-        List<ValleyResponse> valleyResponses = valleyService.searchValleys(keyword, region, position, tagNames, radius, rating, offset);
+        List<ValleyResponse> valleyResponses = valleyService.searchValleys(keyword, region, position, tagNames, radius, rating, sortType, offset);
         return ResponseEntity.ok(valleyResponses);
     }
 
