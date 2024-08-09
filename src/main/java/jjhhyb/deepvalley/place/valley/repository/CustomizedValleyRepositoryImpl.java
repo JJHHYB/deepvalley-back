@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jjhhyb.deepvalley.place.PlaceMapper;
+import jjhhyb.deepvalley.place.PlaceSortType;
 import jjhhyb.deepvalley.place.PlaceUtil;
 import jjhhyb.deepvalley.place.valley.Valley;
 import jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO;
@@ -17,7 +18,7 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
     private EntityManager em;
 
     @Override
-    public List<ValleyResponse> searchValleys(Optional<String> keyword, Optional<String> region, Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Long offset) {
+    public List<ValleyResponse> searchValleys(Optional<String> keyword, Optional<String> region, Optional<List<Double>> position, Optional<List<String>> tagNames, Long radius, Optional<Double> rating, Optional<PlaceSortType> sortType, Long offset) {
         String selectString =
                 "select new jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO(" +
                         "v.placeId, v.name, v.uuid, v.thumbnail, v.address, v.zipcode, v.tel, v.site, v.region, v.content, v.location, v.postCount, v.avgRating, " +
@@ -63,8 +64,12 @@ public class CustomizedValleyRepositoryImpl implements CustomizedValleyRepositor
 
         tagNames.ifPresent(value -> {
             queryString.append("group by v.placeId " +
-                    "having count(t.name) >= :tagCount");
+                    "having count(t.name) >= :tagCount ");
             parameters.put("tagCount", value.size());
+        });
+
+        sortType.ifPresent(value -> {
+            queryString.append("order by v.%s desc ".formatted(value.getName()));
         });
 
         TypedQuery<ValleyQueryDTO> query = em.createQuery(queryString.toString(), ValleyQueryDTO.class);

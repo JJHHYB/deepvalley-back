@@ -1,6 +1,7 @@
 package jjhhyb.deepvalley.place.valley;
 
 import jjhhyb.deepvalley.place.PlaceMapper;
+import jjhhyb.deepvalley.place.PlaceSortType;
 import jjhhyb.deepvalley.place.exception.PlaceNotFoundException;
 import jjhhyb.deepvalley.place.valley.dto.ValleyDetailResponse;
 import jjhhyb.deepvalley.place.valley.dto.ValleyQueryDTO;
@@ -29,7 +30,8 @@ public class ValleyService {
                                               Optional<List<String>> tagNames,
                                               Long radius,
                                               Optional<Double> rating,
+                                              Optional<PlaceSortType> sortType,
                                               Long offset) {
-        return valleyRepository.searchValleys(keyword, region, position, tagNames, radius, rating, offset);
+        return valleyRepository.searchValleys(keyword, region, position, tagNames, radius, rating, sortType, offset);
     }
 }
