@@ -22,6 +22,7 @@ public class ReviewDetailResponse {
     private String visitedDate;
     private String privacy;
     private String memberId;
+    private String memberName;
     private String placeId;
     private String valleyName;
     private String createdDate;
@@ -38,6 +39,7 @@ public class ReviewDetailResponse {
                 .visitedDate(String.valueOf(review.getVisitedDate()))
                 .privacy(review.getPrivacy().name())
                 .memberId(String.valueOf(review.getMember().getLoginEmail()))
+                .memberName(String.valueOf(review.getMember().getName()))
                 .placeId(String.valueOf(review.getPlace().getUuid()))
                 .valleyName(review.getPlace().getName())
                 .createdDate(String.valueOf(review.getCreatedDate()))

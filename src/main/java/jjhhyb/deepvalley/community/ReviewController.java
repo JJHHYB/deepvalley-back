@@ -89,9 +89,11 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     public List<PlaceImageResponse> searchReviewImage(
-            @PathVariable("valley-id") String placeId
+            @PathVariable("valley-id") String placeId,
+            Authentication auth
     ) {
-        return reviewService.searchReviewImage(placeId);
+        String userId = auth.getName();
+        return reviewService.searchReviewImage(placeId, userId);
     }
 
     @GetMapping("/api/valley/{valley-id}/review")
@@ -102,9 +104,11 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     public ReviewsResponse getPlaceReviews(
-            @PathVariable("valley-id") String placeId
+            @PathVariable("valley-id") String placeId,
+            Authentication auth
     ) {
-        return reviewService.getPlaceReviews(placeId);
+        String userId = auth.getName();
+        return reviewService.getPlaceReviews(placeId, userId);
     }
 
     @GetMapping("/api/review/{review-id}/detail")
@@ -115,9 +119,11 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     public ReviewDetailResponse getReviewDetail(
-            @PathVariable("review-id") String reviewId
+            @PathVariable("review-id") String reviewId,
+            Authentication auth
     ) {
-        return reviewService.getReviewDetail(reviewId);
+        String userId = auth.getName();
+        return reviewService.getReviewDetail(reviewId, userId);
     }
 
     @GetMapping("/api/member/{member-id}/review")

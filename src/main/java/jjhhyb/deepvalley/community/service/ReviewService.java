@@ -149,20 +149,20 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public List<PlaceImageResponse> searchReviewImage(String placeId) {
-        // 리뷰를 통해 해당 장소에 대한 모든 리뷰를 조회합니다.
+    public List<PlaceImageResponse> searchReviewImage(String placeId, String userId) {
+        // 특정 장소에 대한 모든 리뷰 조회
         List<Review> reviews = reviewRepository.findAllByPlace_Uuid(placeId);
 
-        // 각 리뷰에 대한 이미지 URL을 가져와서 PlaceImageResponse 객체를 생성
+        // 리뷰에 대해 작성자 여부와 공개 여부를 확인하고 필터링
         return reviews.stream()
+                .filter(review -> review.getMember().getLoginEmail().equals(userId) || review.getPrivacy() == ReviewPrivacy.PUBLIC)
                 .map(review -> {
                     List<String> imageUrls = reviewImageRepository.findByReview_ReviewId(review.getReviewId()).stream()
                             .map(reviewImage -> reviewImage.getImage().getImageUrl())
                             .collect(Collectors.toList());
 
-                    // 이미지가 있는 리뷰만 필터링
                     if (!imageUrls.isEmpty()) {
-                        return new PlaceImageResponse(review.getUuid(), review.getTitle(), review.getContent(), review.getVisitedDate(), imageUrls, review.getMember().getProfileImageUrl());
+                        return new PlaceImageResponse(review.getUuid(), review.getMember().getName(), review.getTitle(), review.getContent(), review.getVisitedDate(), imageUrls, review.getMember().getProfileImageUrl());
                     } else {
                         return null;
                     }
@@ -172,16 +172,17 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewsResponse getPlaceReviews(String placeId) {
-        // 데이터베이스에서 해당 계곡(장소)의 리뷰 목록을 조회
+    public ReviewsResponse getPlaceReviews(String placeId, String userId) {
+        // 특정 장소에 대한 모든 리뷰 조회
         List<Review> reviews = reviewRepository.findAllByPlace_Uuid(placeId);
 
-        // Review 엔터티를 ReviewResponse로 변환
+        // 각 리뷰에 대해 작성자 여부와 공개 여부를 확인하고 필터링
         List<ReviewDetailResponse> reviewDetailResponses = reviews.stream()
+                .filter(review -> review.getMember().getLoginEmail().equals(userId) || review.getPrivacy() == ReviewPrivacy.PUBLIC)
                 .map(ReviewDetailResponse::from)
                 .collect(Collectors.toList());
 
-        // ReviewsResponse 객체에 변환된 리뷰 목록을 설정
+        // 필터링된 리뷰 목록을 ReviewsResponse로 변환하여 반환
         ReviewsResponse reviewsResponse = new ReviewsResponse();
         reviewsResponse.setReviews(reviewDetailResponses);
 
@@ -189,12 +190,20 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewDetailResponse getReviewDetail(String reviewId) {
-        // 리뷰가 존재하지 않으면 예외 처리
+    public ReviewDetailResponse getReviewDetail(String reviewId, String userId) {
+        // 리뷰를 조회하고, 존재하지 않으면 예외 처리
         Review review = reviewRepository.findByUuid(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND));
 
-        // Review 엔터티를 ReviewDetailResponse로 변환
+        // 로그인된 사용자가 리뷰 작성자인지 확인
+        boolean isOwner = review.getMember().getLoginEmail().equals(userId);
+
+        // 리뷰가 PUBLIC이 아니고, 작성자도 아니라면 예외 처리
+        if (!isOwner && review.getPrivacy() != ReviewPrivacy.PUBLIC) {
+            throw new ReviewNotFoundException(REVIEW_NOT_FOUND);
+        }
+
+        // Review 엔터티를 ReviewDetailResponse로 변환하여 반환
         return ReviewDetailResponse.from(review);
     }
 
