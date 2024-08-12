@@ -155,6 +155,7 @@ public class ReviewService {
 
         // 각 리뷰에 대한 이미지 URL을 가져와서 PlaceImageResponse 객체를 생성
         return reviews.stream()
+                .filter(review -> review.getPrivacy() == ReviewPrivacy.PUBLIC)
                 .map(review -> {
                     List<String> imageUrls = reviewImageRepository.findByReview_ReviewId(review.getReviewId()).stream()
                             .map(reviewImage -> reviewImage.getImage().getImageUrl())
@@ -162,7 +163,7 @@ public class ReviewService {
 
                     // 이미지가 있는 리뷰만 필터링
                     if (!imageUrls.isEmpty()) {
-                        return new PlaceImageResponse(review.getUuid(), review.getTitle(), review.getContent(), review.getVisitedDate(), imageUrls, review.getMember().getProfileImageUrl());
+                        return new PlaceImageResponse(review.getUuid(), review.getMember().getName(), review.getTitle(), review.getContent(), review.getVisitedDate(), imageUrls, review.getMember().getProfileImageUrl());
                     } else {
                         return null;
                     }
@@ -176,8 +177,9 @@ public class ReviewService {
         // 데이터베이스에서 해당 계곡(장소)의 리뷰 목록을 조회
         List<Review> reviews = reviewRepository.findAllByPlace_Uuid(placeId);
 
-        // Review 엔터티를 ReviewResponse로 변환
+        // PUBLIC인 리뷰만 필터링
         List<ReviewDetailResponse> reviewDetailResponses = reviews.stream()
+                .filter(review -> review.getPrivacy() == ReviewPrivacy.PUBLIC)
                 .map(ReviewDetailResponse::from)
                 .collect(Collectors.toList());
 
@@ -190,8 +192,9 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public ReviewDetailResponse getReviewDetail(String reviewId) {
-        // 리뷰가 존재하지 않으면 예외 처리
+        // 리뷰가 존재하지 않거나, PUBLIC이 아닌 경우 예외 처리
         Review review = reviewRepository.findByUuid(reviewId)
+                .filter(r -> r.getPrivacy() == ReviewPrivacy.PUBLIC)
                 .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND));
 
         // Review 엔터티를 ReviewDetailResponse로 변환
