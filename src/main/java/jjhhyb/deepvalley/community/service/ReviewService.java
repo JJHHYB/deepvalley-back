@@ -82,41 +82,27 @@ public class ReviewService {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
 
-        // 기존 리뷰 이미지 URL 목록 가져오기
-        List<String> existingImageUrls = updateReview.getReviewImages().stream()
+        // 기존 리뷰 이미지 목록 가져오기
+        List<ReviewImage> existingReviewImages = updateReview.getReviewImages();
+        List<String> existingImageUrls = existingReviewImages.stream()
                 .map(reviewImage -> reviewImage.getImage().getImageUrl())
                 .toList();
 
         // 리뷰 엔티티 업데이트
         updateReviewEntity(updateReview, request);
 
+        // 새로운 이미지가 있는지 확인
         if (imageFiles != null && !imageFiles.isEmpty()) {
             // 이미지 파일 업로드 및 URL 생성 & 새로운 ReviewImage 객체 생성
             List<String> newImageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
             List<ReviewImage> updatedReviewImages = reviewImageService.processImages(newImageUrls, updateReview);
 
-            // 요청된 이미지 URL을 Set으로 변환하여 기존 이미지와 비교
-            Set<String> newImageUrlSet = new HashSet<>(newImageUrls);
-          
-            // 삭제할 이미지 결정: 기존 이미지 중 요청된 이미지 URL에 없는 이미지
-            List<ReviewImage> imagesToDelete = updateReview.getReviewImages().stream()
-                    .filter(existingReviewImage -> !newImageUrlSet.contains(existingReviewImage.getImage().getImageUrl()))
-                    .collect(Collectors.toList());
-
-            // 기존 이미지 삭제
-            if (!imagesToDelete.isEmpty()) {
-                reviewImageService.deleteAll(imagesToDelete);
-            }
-          
-            // 새 이미지 추가
+            // 리뷰 이미지 업데이트 (기존 이미지와 새 이미지 처리)
             reviewImageService.updateReviewImages(updateReview, updatedReviewImages);
         } else {
             // 이미지 파일이 없는 경우: 기존 이미지가 있다면 삭제 처리
-            if (!existingImageUrls.isEmpty()) {
-                List<ReviewImage> imagesToDelete = updateReview.getReviewImages();
-                if (!imagesToDelete.isEmpty()) {
-                    reviewImageService.deleteAll(imagesToDelete);
-                }
+            if (!updateReview.getReviewImages().isEmpty()) {
+                reviewImageService.deleteAll(updateReview.getReviewImages());
             }
         }
 
