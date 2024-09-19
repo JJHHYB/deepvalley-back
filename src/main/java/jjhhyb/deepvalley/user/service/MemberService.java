@@ -1,5 +1,8 @@
 package jjhhyb.deepvalley.user.service;
 
+import jjhhyb.deepvalley.community.repository.ReviewRepository;
+import jjhhyb.deepvalley.image.ImageService;
+import jjhhyb.deepvalley.image.ImageType;
 import jjhhyb.deepvalley.user.dto.LoginRequestDto;
 import jjhhyb.deepvalley.user.dto.PasswordRequestDto;
 import jjhhyb.deepvalley.user.dto.ProfileRequestDto;
@@ -9,14 +12,21 @@ import jjhhyb.deepvalley.user.exception.RegisterException;
 import jjhhyb.deepvalley.user.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final ReviewRepository reviewRepository;
+    private final ImageService imageService;
 
-    public MemberService(MemberRepository memberRepository) {
+    public MemberService(MemberRepository memberRepository, ReviewRepository reviewRepository, ImageService imageService) {
         this.memberRepository = memberRepository;
+        this.reviewRepository = reviewRepository;
+        this.imageService = imageService;
     }
 
     @Transactional
@@ -52,10 +62,11 @@ public class MemberService {
     }
 
     @Transactional
-    public Optional<Member> updateMember(ProfileRequestDto profileRequestDto, String loginEmail) throws Exception{
+    public Optional<Member> updateMember(ProfileRequestDto profileRequestDto, MultipartFile profileImage, String loginEmail) throws Exception{
         Optional<Member> member = memberRepository.findByLoginEmail(loginEmail);
 
         if (member.isPresent()) {
+            String profileUrl = "";
             Member memberEntity = member.get();
             // Check for duplicate name
             Optional<Member> existingMemberByName = memberRepository.findByName(profileRequestDto.getName());
@@ -63,8 +74,25 @@ public class MemberService {
                 throw new MyProfileException.NicknameAlreadyExistsException("Name already in use");
             }
 
+            // 현재 등록된 url이 있을 때
+            if (memberEntity.getProfileImageUrl() != null && !memberEntity.getProfileImageUrl().isEmpty()) {
+                // 프로필이미지 수정이 되었을 때 기존 파일 S3에서 삭제하고 신규 파일 업로드
+                if (profileImage != null) {
+                    imageService.deleteImages(List.of(memberEntity.getProfileImageUrl()));
+                    List<String> imageUrls = imageService.uploadImagesAndGetUrls(List.of(profileImage), ImageType.PROFILE);
+                    profileUrl = imageUrls.get(0);
+                } else{ // 프로필이미지 수정이 되지 않았을 때
+                    profileUrl = memberEntity.getProfileImageUrl();
+                }
+            } else{ // 현재 등록된 url이 없을 때
+                if (profileImage != null) { // 신규 파일 업로드
+                    List<String> imageUrls = imageService.uploadImagesAndGetUrls(List.of(profileImage), ImageType.PROFILE);
+                    profileUrl = imageUrls.get(0);
+                }
+            }
+
             memberEntity.setName(profileRequestDto.getName());
-            memberEntity.setProfileImageUrl(profileRequestDto.getProfileImageUrl());
+            memberEntity.setProfileImageUrl(profileUrl);
             memberEntity.setDescription(profileRequestDto.getDescription());
             memberRepository.save(memberEntity);
         }else{
@@ -79,7 +107,13 @@ public class MemberService {
 
         if (member.isPresent()) {
             Member memberEntity = member.get();
-            memberEntity.setPassword(passwordRequestDto.getPassword());
+            if (!memberEntity.getPassword().equals(passwordRequestDto.getOldPassword())) {
+                throw new MyProfileException.InvalidPasswordException("Invalid Old Password");
+            }
+            if (memberEntity.getPassword().equals(passwordRequestDto.getNewPassword())){
+                throw new MyProfileException.SamePasswordException("New password is the same as Old password");
+            }
+            memberEntity.setPassword(passwordRequestDto.getNewPassword());
             memberRepository.save(memberEntity);
         } else {
             throw new MyProfileException.ProfileNotFoundException("Member not found with email " + loginEmail);
@@ -88,19 +122,55 @@ public class MemberService {
 
     @Transactional
     public void deleteMember(LoginRequestDto loginRequestDto, String authName) throws MyProfileException {
+        // 현재 인증 이메일 체크
         if (!authName.equals(loginRequestDto.getLoginEmail())) {
             throw new MyProfileException.UnauthorizedAccessException("Invalid token");
         }
-        Optional<Member> member = memberRepository.findByLoginEmail(authName);
-        if (member.isPresent()) {
-            memberRepository.delete(member.get());
+
+        // 아이디, 비밀번호 체크
+        Optional<Member> optionalMember = memberRepository.findByLoginEmailAndPassword(loginRequestDto.getLoginEmail(), loginRequestDto.getPassword());
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+
+            // review 테이블에서 해당 member_id를 참조하는 행 삭제
+            reviewRepository.deleteByMember(member);
+
+            // member 테이블에서 회원 삭제
+            memberRepository.deleteById(member.getMemberId());
         } else {
-            throw new MyProfileException.ProfileNotFoundException("Member not found with email " + authName);
+            throw new MyProfileException.ProfileNotFoundException("Invalid loginEmail or password. : " + authName);
+        }
+    }
+
+    @Transactional
+    public void deleteMember(String authName) throws MyProfileException {
+       // 아이디, 비밀번호 체크
+        Optional<Member> optionalMember = memberRepository.findByLoginEmail(authName);
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+
+            // review 테이블에서 해당 member_id를 참조하는 행 삭제
+            reviewRepository.deleteByMember(member);
+
+            // member 테이블에서 회원 삭제
+            memberRepository.deleteById(member.getMemberId());
+        } else {
+            throw new MyProfileException.ProfileNotFoundException("Invalid loginEmail or password. : " + authName);
         }
     }
 
     @Transactional
     public void save(Member member) {
         memberRepository.save(member);
+    }
+
+    @Transactional
+    public Optional<Member> findId(String name) {
+        return memberRepository.findByName(name);
+    }
+
+    @Transactional
+    public Optional<Member> findPassword(String loginEmail) {
+        return memberRepository.findByLoginEmail(loginEmail);
     }
 }

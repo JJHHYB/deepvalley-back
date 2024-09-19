@@ -2,7 +2,11 @@ spring:
   application:
     name: deepvalley
   profiles:
-    active: dev
+    active: dev,secrets
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
 
 logging:
   level:
@@ -17,22 +21,14 @@ logging:
           descriptor:
             sql: trace
 
-jwt:
-  secretkey: Y2CwQ0L1K5z8X2V7n6G7F3p1M9H4J6T8b3N0W5z7Y6V4gJ2wB8P1K9Q3L5T7X6Z0n3R7D
-  expiretime: 3600000
-
 oauth:
   kakao:
-    client-id: 0254b79556922c41c5f92bfb2ddc63fa
-    redirect-uri: http://localhost:3000/auth
     url:
       auth: https://kauth.kakao.com
       api: https://kapi.kakao.com
 
-swagger:
-  production:
-    url: https://srv.deepvalley.net
-  development:
-    url: http://ec2-13-124-151-228.ap-northeast-2.compute.amazonaws.com:8080
-
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

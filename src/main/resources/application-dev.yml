@@ -11,6 +11,6 @@ spring:
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: jjhhyb.deepvalley.dialect.CustomH2Dialect
     hibernate:
       ddl-auto: create

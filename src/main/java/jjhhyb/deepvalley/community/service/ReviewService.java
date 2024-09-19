@@ -7,6 +7,8 @@ import jjhhyb.deepvalley.community.dto.response.PlaceImageResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
 import jjhhyb.deepvalley.community.ReviewNotFoundException;
+import jjhhyb.deepvalley.image.ImageService;
+import jjhhyb.deepvalley.image.ImageType;
 import jjhhyb.deepvalley.place.Place;
 import jjhhyb.deepvalley.place.PlaceRepository;
 import jjhhyb.deepvalley.tag.ReviewTagRepository;
@@ -18,6 +20,7 @@ import jjhhyb.deepvalley.user.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,6 +35,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewImageService reviewImageService;
     private final ReviewTagService reviewTagService;
+    private final ImageService imageService;
     private final ReviewImageRepository reviewImageRepository;
     private final ReviewTagRepository reviewTagRepository;
     private final MemberRepository memberRepository;
@@ -44,7 +48,7 @@ public class ReviewService {
     private static final String NOT_USER_REVIEW = "사용자가 작성한 리뷰가 아닙니다.";
 
     @Transactional
-    public ReviewDetailResponse createReview(ReviewPostRequest request, String userId) {
+    public ReviewDetailResponse createReview(ReviewPostRequest request, List<MultipartFile> imageFiles, String userId) {
         // userId를 이용하여 Member 엔티티 조회
         Member member = findMemberByUserId(userId);
 
@@ -54,38 +58,62 @@ public class ReviewService {
         // 생성한 Review 엔티티 데이터베이스에 저장
         Review savedReview = reviewRepository.save(review);
 
-        // 이미지, 태그 처리
-        List<ReviewImage> reviewImages = reviewImageService.processImages(request.getImageUrls(), savedReview);
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            // 이미지 파일 업로드 및 URL 생성
+            List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
+
+            // 이미지 처리
+            List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, savedReview);
+            updateReviewWithImages(savedReview, reviewImages);
+        }
+
+        // 태그 처리
         List<ReviewTag> reviewTags = reviewTagService.processTags(request.getTagNames(), savedReview);
+        updateReviewWithTags(savedReview, reviewTags);
 
-        // 생성된 리뷰에 이미지와 태그를 추가하고, 업데이트된 리뷰를 데이터베이스에 저장
-        updateReviewWithImagesAndTags(savedReview, reviewImages, reviewTags);
-
+        updatePlaceMetrics(savedReview.getPlace().getUuid());
         // 응답 객체로 변환 후 반환
         return ReviewDetailResponse.from(savedReview);
     }
 
     // 리뷰 업데이트
     @Transactional
-    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, String userId) {
+    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, List<MultipartFile> imageFiles, String userId) {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
+
+        // 기존 리뷰 이미지 목록 가져오기
+        List<ReviewImage> existingReviewImages = updateReview.getReviewImages();
+        List<String> existingImageUrls = existingReviewImages.stream()
+                .map(reviewImage -> reviewImage.getImage().getImageUrl())
+                .toList();
 
         // 리뷰 엔티티 업데이트
         updateReviewEntity(updateReview, request);
 
-        // 이미지, 태그 처리
-        List<ReviewImage> updatedReviewImages = reviewImageService.processImages(request.getImageUrls(), updateReview);
-        List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
+        // 새로운 이미지가 있는지 확인
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            // 이미지 파일 업로드 및 URL 생성 & 새로운 ReviewImage 객체 생성
+            List<String> newImageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
+            List<ReviewImage> updatedReviewImages = reviewImageService.processImages(newImageUrls, updateReview);
 
-        // 기존의 이미지, 태그 제거 및 업데이트
-        reviewImageService.updateReviewImages(updateReview, updatedReviewImages);
+            // 리뷰 이미지 업데이트 (기존 이미지와 새 이미지 처리)
+            reviewImageService.updateReviewImages(updateReview, updatedReviewImages);
+        } else {
+            // 이미지 파일이 없는 경우: 기존 이미지가 있다면 삭제 처리
+            if (!updateReview.getReviewImages().isEmpty()) {
+                reviewImageService.deleteAll(updateReview.getReviewImages());
+            }
+        }
+
+        // 태그 처리
+        List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
         reviewTagService.updateReviewTags(updateReview, updatedReviewTags);
 
         // 업데이트된 리뷰 저장
         reviewRepository.save(updateReview);
 
-        // 응답 객체로 변환 후 반환
+        updatePlaceMetrics(updateReview.getPlace().getUuid());
         return ReviewDetailResponse.from(updateReview);
     }
 
@@ -94,45 +122,53 @@ public class ReviewService {
         // 리뷰 존재 여부 및 작성자 확인
         Review review = validateReviewOwner(reviewId, userId);
 
-        // 리뷰와 연관된 모든 이미지 삭제
-        List<ReviewImage> reviewImages = reviewImageService.findByReviewId(review.getReviewId());
+        // 리뷰와 연관된 모든 이미지, 태그 삭제
+        List<ReviewImage> reviewImages = reviewImageRepository.findByReview_ReviewId(review.getReviewId());
         reviewImageService.deleteAll(reviewImages);
-
-        // 리뷰와 연관된 모든 태그 삭제
         List<ReviewTag> reviewTags = reviewTagService.findByReviewId(review.getReviewId());
         reviewTagService.deleteAll(reviewTags);
 
         // 리뷰 삭제
         reviewRepository.delete(review);
+
+        updatePlaceMetrics(review.getPlace().getUuid());
     }
 
     @Transactional(readOnly = true)
-    public List<PlaceImageResponse> searchReviewImage(String placeId) {
-        // 리뷰를 통해 해당 장소에 대한 모든 리뷰를 조회합니다.
+    public List<PlaceImageResponse> searchReviewImage(String placeId, String userId) {
+        // 특정 장소에 대한 모든 리뷰 조회
         List<Review> reviews = reviewRepository.findAllByPlace_Uuid(placeId);
 
-        // 각 리뷰에 대한 이미지 URL을 가져와서 PlaceImageResponse 객체를 생성
+        // 리뷰에 대해 작성자 여부와 공개 여부를 확인하고 필터링
         return reviews.stream()
+                .filter(review -> review.getMember().getLoginEmail().equals(userId) || review.getPrivacy() == ReviewPrivacy.PUBLIC)
                 .map(review -> {
                     List<String> imageUrls = reviewImageRepository.findByReview_ReviewId(review.getReviewId()).stream()
                             .map(reviewImage -> reviewImage.getImage().getImageUrl())
                             .collect(Collectors.toList());
-                    return new PlaceImageResponse(review.getReviewId(), imageUrls);
+
+                    if (!imageUrls.isEmpty()) {
+                        return new PlaceImageResponse(review.getUuid(), review.getMember().getName(), review.getTitle(), review.getContent(), review.getVisitedDate(), imageUrls, review.getMember().getProfileImageUrl());
+                    } else {
+                        return null;
+                    }
                 })
+                .filter(Objects::nonNull) // null 필터링
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public ReviewsResponse getPlaceReviews(String placeId) {
-        // 데이터베이스에서 해당 계곡(장소)의 리뷰 목록을 조회
+    public ReviewsResponse getPlaceReviews(String placeId, String userId) {
+        // 특정 장소에 대한 모든 리뷰 조회
         List<Review> reviews = reviewRepository.findAllByPlace_Uuid(placeId);
 
-        // Review 엔터티를 ReviewResponse로 변환
+        // 각 리뷰에 대해 작성자 여부와 공개 여부를 확인하고 필터링
         List<ReviewDetailResponse> reviewDetailResponses = reviews.stream()
+                .filter(review -> review.getMember().getLoginEmail().equals(userId) || review.getPrivacy() == ReviewPrivacy.PUBLIC)
                 .map(ReviewDetailResponse::from)
                 .collect(Collectors.toList());
 
-        // ReviewsResponse 객체에 변환된 리뷰 목록을 설정
+        // 필터링된 리뷰 목록을 ReviewsResponse로 변환하여 반환
         ReviewsResponse reviewsResponse = new ReviewsResponse();
         reviewsResponse.setReviews(reviewDetailResponses);
 
@@ -140,12 +176,20 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewDetailResponse getReviewDetail(String reviewId) {
-        // 리뷰가 존재하지 않으면 예외 처리
+    public ReviewDetailResponse getReviewDetail(String reviewId, String userId) {
+        // 리뷰를 조회하고, 존재하지 않으면 예외 처리
         Review review = reviewRepository.findByUuid(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND));
 
-        // Review 엔터티를 ReviewDetailResponse로 변환
+        // 로그인된 사용자가 리뷰 작성자인지 확인
+        boolean isOwner = review.getMember().getLoginEmail().equals(userId);
+
+        // 리뷰가 PUBLIC이 아니고, 작성자도 아니라면 예외 처리
+        if (!isOwner && review.getPrivacy() != ReviewPrivacy.PUBLIC) {
+            throw new ReviewNotFoundException(REVIEW_NOT_FOUND);
+        }
+
+        // Review 엔터티를 ReviewDetailResponse로 변환하여 반환
         return ReviewDetailResponse.from(review);
     }
 
@@ -230,11 +274,15 @@ public class ReviewService {
     }
 
     // 리뷰에 이미지와 태그 추가 및 업데이트
-    private void updateReviewWithImagesAndTags(Review review, List<ReviewImage> reviewImages, List<ReviewTag> reviewTags) {
+    private void updateReviewWithImages(Review review, List<ReviewImage> reviewImages) {
         review.setReviewImages(reviewImages);
-        review.setReviewTags(reviewTags);
         reviewRepository.save(review);
         reviewImageRepository.saveAll(reviewImages);
+    }
+
+    private void updateReviewWithTags(Review review, List<ReviewTag> reviewTags) {
+        review.setReviewTags(reviewTags);
+        reviewRepository.save(review);
         reviewTagRepository.saveAll(reviewTags);
     }
 
@@ -245,5 +293,13 @@ public class ReviewService {
         review.setVisitedDate(parseVisitedDate(request.getVisitedDate()));
         review.setPrivacy(ReviewPrivacy.valueOf(request.getPrivacy()));
         review.setUpdatedDate(LocalDateTime.now());
+    }
+    private void updatePlaceMetrics(String placeUuid) {
+        Double averageRating = placeRepository.findAverageRatingByPlace(placeUuid);
+        Integer reviewCount = placeRepository.countByPlace(placeUuid);
+        Place place = placeRepository.findByUuid(placeUuid).orElseThrow();
+        place.setAvgRating(averageRating);
+        place.setPostCount(reviewCount);
+        placeRepository.save(place);
     }
 }

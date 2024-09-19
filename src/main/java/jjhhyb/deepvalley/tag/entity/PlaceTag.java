@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jjhhyb.deepvalley.entityId.PlaceTagId;
 import jjhhyb.deepvalley.place.Place;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PlaceTag {
 
     @EmbeddedId

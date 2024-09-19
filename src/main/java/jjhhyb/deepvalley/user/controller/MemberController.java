@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,18 +14,35 @@ import jjhhyb.deepvalley.user.entity.Member;
 import jjhhyb.deepvalley.user.exception.LoginException;
 import jjhhyb.deepvalley.user.service.MemberService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Random;
 
 @RestController
 @RequestMapping("/api/member")
 @Tag(name = "Member", description = "회원 관리 API")
 public class MemberController {
     private final MemberService memberService;
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    private static final int PASSWORD_LENGTH = 10;
+
+    private String generateRandomPassword() {
+        Random random = new Random();
+        StringBuilder password = new StringBuilder(PASSWORD_LENGTH);
+
+        for (int i = 0; i < PASSWORD_LENGTH; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            password.append(CHARACTERS.charAt(index));
+        }
+        return password.toString();
+    }
+
     public MemberController(MemberService memberService) {
         this.memberService = memberService;
     }
@@ -48,6 +64,7 @@ public class MemberController {
         member.setLoginEmail(registerRequestDto.getLoginEmail());
         member.setName(registerRequestDto.getName());
         member.setPassword(registerRequestDto.getPassword());
+        member.setLoginDate(LocalDateTime.now());
 
         Member registeredMember = memberService.register(member);
         RegisterResponseDto responseDto = RegisterResponseDto.builder()
@@ -59,6 +76,51 @@ public class MemberController {
                 .build();
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
+
+    // 아이디 찾기
+    @PostMapping("/find-id")
+    @Operation(summary = "아이디 찾기", description = "이름을 활용하여 아이디를 찾습니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "아이디 찾기 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FindIdResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(examples = @ExampleObject( value = "User not found" ))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(examples = @ExampleObject( value = "Bad Request" ))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(examples = @ExampleObject( value = "Internal Server Error" )))
+    })
+    public ResponseEntity<Object> findId(
+            @Parameter(description = "아이디 찾기 정보", required = true) @RequestBody FindIdRequestDto findIdRequestDto) {
+            Optional<Member> member = memberService.findId(findIdRequestDto.getName());
+
+            return member.map(m -> ResponseEntity.ok(FindIdResponseDto.fromMember(m)))
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // 비밀번호 찾기
+    @PostMapping("/find-password")
+    @Operation(summary = "비밀번호 찾기", description = "로그인 이메일을 활용하여 임시비밀번호를 찾습니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비밀번호 찾기 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FindPasswordResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(examples = @ExampleObject( value = "Member not found" ))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(examples = @ExampleObject( value = "Bad Request" ))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(examples = @ExampleObject( value = "Internal Server Error" )))
+    })
+    public ResponseEntity<FindPasswordResponseDto> findPassword(
+            @Parameter(description = "비밀번호 찾기 정보", required = true) @RequestBody FindPasswordRequestDto findPasswordRequestDto) {
+        Optional<Member> memberOptional = memberService.findPassword(findPasswordRequestDto.getLoginEmail());
+
+        if (memberOptional.isPresent()) {
+            Member member = memberOptional.get();
+            String newPassword = generateRandomPassword();
+            member.setPassword(newPassword);  // 비밀번호를 랜덤값으로 변경
+            memberService.save(member);  // 변경된 비밀번호를 저장
+
+            FindPasswordResponseDto responseDto = (FindPasswordResponseDto) FindPasswordResponseDto.fromMember(member);
+            responseDto.setPassword(newPassword);  // 변경된 비밀번호를 응답 DTO에 설정
+            return ResponseEntity.ok(responseDto);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new FindPasswordResponseDto("Member not found"));
+        }
+    }
+
 
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "로그인합니다.")
@@ -73,13 +135,8 @@ public class MemberController {
             @Parameter(description = "로그인 정보", required = true) @RequestBody LoginRequestDto loginRequestDto) {
         Optional<Member> user = memberService.authenticate(loginRequestDto.getLoginEmail(), loginRequestDto.getPassword());
 
-        if (user.isEmpty()) {
-            throw new LoginException.UserNotFoundException("User not found");
-        }
-
-        if (!user.get().getPassword().equals(loginRequestDto.getPassword())) {
-            throw new LoginException.InvalidCredentialsException("Invalid password");
-        }
+        if (user.isEmpty()) { throw new LoginException.UserNotFoundException("User not found"); }
+        if (!user.get().getPassword().equals(loginRequestDto.getPassword())) { throw new LoginException.InvalidCredentialsException("Invalid password"); }
 
         Member memberEntity = user.get();
         memberEntity.setLoginDate(LocalDateTime.now());
@@ -106,7 +163,7 @@ public class MemberController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PutMapping
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "회원 프로필 수정", description = "현재 로그인한 사용자의 프로필을 수정합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "수정 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProfileResponseDto.class))),
@@ -115,9 +172,11 @@ public class MemberController {
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(examples = @ExampleObject( value = "Internal Server Error" )))
     })
     public ResponseEntity<ProfileResponseDto> updateMember(
-            @Parameter(description = "프로필 수정 정보", required = true) @RequestBody ProfileRequestDto profileRequestDto,
+            @RequestPart(value = "profileRequest") ProfileRequestDto profileRequest,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
             Authentication auth) throws Exception {
-        Optional<Member> member = memberService.updateMember(profileRequestDto, auth.getName());
+
+        Optional<Member> member = memberService.updateMember(profileRequest, profileImage, auth.getName());// 인증이 되어 있는 UserID
         return member.map(m -> ResponseEntity.ok(ProfileResponseDto.fromMember(m)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -126,13 +185,14 @@ public class MemberController {
     @Operation(summary = "비밀번호 변경", description = "현재 로그인한 사용자의 비밀번호를 변경합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
-            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(examples = @ExampleObject( value = "User not found" ))),
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(examples = @ExampleObject( value = "Bad Request" ))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 현재 비밀번호", content = @Content(examples = @ExampleObject( value = "Invalid Old Password" ))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(examples = @ExampleObject( value = "User not found" ))),
+            @ApiResponse(responseCode = "422", description = "서로 같은 비밀번호 설정", content = @Content(examples = @ExampleObject( value = "New password is the same as Old password" ))),
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(examples = @ExampleObject( value = "Internal Server Error" )))
     })
     public ResponseEntity<Void> changePassword(
-            @Parameter(description = "비밀번호 변경 정보", required = true) @RequestBody PasswordRequestDto passwordRequestDto,
-            Authentication auth) {
+            @Parameter(description = "비밀번호 변경 정보", required = true) @RequestBody PasswordRequestDto passwordRequestDto, Authentication auth) {
         memberService.changePassword(passwordRequestDto, auth.getName());
         return ResponseEntity.ok().build();
     }
