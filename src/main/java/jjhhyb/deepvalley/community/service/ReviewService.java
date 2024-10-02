@@ -82,12 +82,6 @@ public class ReviewService {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
 
-        // 기존 리뷰 이미지 목록 가져오기
-        List<ReviewImage> existingReviewImages = updateReview.getReviewImages();
-        List<String> existingImageUrls = existingReviewImages.stream()
-                .map(reviewImage -> reviewImage.getImage().getImageUrl())
-                .toList();
-
         // 리뷰 엔티티 업데이트
         updateReviewEntity(updateReview, request);
 
