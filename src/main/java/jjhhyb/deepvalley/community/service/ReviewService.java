@@ -105,7 +105,6 @@ public class ReviewService {
             }
         }
 
-
         // 태그 처리
         List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
         reviewTagService.updateReviewTags(updateReview, updatedReviewTags);

@@ -17,6 +17,6 @@ public class ReviewPostRequest {
     private String visitedDate;
     private String privacy;
     private String placeId;
-    private String imageUrls;
+    private List<String> imageUrls;
     private List<String> tagNames;
 }
