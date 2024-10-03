@@ -6,7 +6,10 @@ import jjhhyb.deepvalley.image.Image;
 import jjhhyb.deepvalley.community.entity.Review;
 import jjhhyb.deepvalley.community.entity.ReviewImage;
 import jjhhyb.deepvalley.entityId.ReviewImageId;
+import jjhhyb.deepvalley.image.ImageService;
+import jjhhyb.deepvalley.image.S3Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 public class ReviewImageService {
     private final ImageRepository imageRepository;
     private final ReviewImageRepository reviewImageRepository;
+    private ImageService imageService;
 
     // 이미지 처리 (ReviewImage 객체 리스트 생성)
     public List<ReviewImage> processImages(List<String> imageUrls, Review review) {
@@ -59,6 +63,9 @@ public class ReviewImageService {
 
         // 데이터베이스에서 삭제할 이미지 처리
         reviewImageRepository.deleteAll(imagesToRemove);
+
+        // S3 에서 이미지 삭제
+        imageService.deleteImages(deletedImages);
     }
 
     public void addImages(Review review, List<ReviewImage> updatedImages) {
