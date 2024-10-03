@@ -57,10 +57,11 @@ public class ReviewController {
             @PathVariable("review-id") String reviewId,
             @RequestPart("reviewPostRequest") ReviewPostRequest reviewPostRequest,
             @RequestPart(value = "imageUrls", required = false) List<MultipartFile> imageFiles,
+            @RequestPart(value = "deleteImageUrls", required = false) List<String> deletedImages,
             Authentication auth
     ) {
         String userId = auth.getName(); // 인증이 되어 있는 UserID
-        return reviewService.updateReview(reviewId, reviewPostRequest, imageFiles, userId);
+        return reviewService.updateReview(reviewId, reviewPostRequest, imageFiles, deletedImages, userId);
     }
 
     @DeleteMapping("/api/review/{review-id}")

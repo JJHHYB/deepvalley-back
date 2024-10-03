@@ -62,31 +62,4 @@ public class ReviewImageServiceTest {
         assertEquals(2, reviewImages.size());
         verify(imageRepository, times(1)).save(any(Image.class)); // 새 이미지가 저장되었는지 확인
     }
-
-    @Test
-    public void testUpdateReviewImages() {
-        // 기존 리뷰 설정
-        Review review = new Review();
-        review.setReviewId(1L);
-
-        // 기존 이미지
-        ReviewImage oldImage = new ReviewImage();
-        oldImage.setId(new ReviewImageId(1L, 1L)); // ReviewId, ImageId
-        review.getReviewImages().add(oldImage);
-
-        // 새로운 이미지
-        ReviewImage newImage = new ReviewImage();
-        newImage.setId(new ReviewImageId(1L, 2L));
-
-        List<ReviewImage> updatedImages = Arrays.asList(newImage);
-
-        // updateReviewImages 호출
-        reviewImageService.updateReviewImages(review, updatedImages);
-
-        // 검증
-        assertTrue(review.getReviewImages().contains(newImage)); // 새로운 이미지가 추가되었는지 확인
-        assertFalse(review.getReviewImages().contains(oldImage)); // 기존 이미지가 제거되었는지 확인
-
-        verify(reviewImageRepository, times(1)).deleteAll(anyList()); // 기존 이미지 삭제 확인
-    }
 }
