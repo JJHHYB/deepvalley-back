@@ -49,14 +49,20 @@ public class ReviewImageService {
                 .build();
     }
 
-    public void removeImages(Review review, List<String> deletedImages) {
+    public void removeImages(Review review, List<String>  deletedImages) {
+        System.out.println("DELETE!!!!!!!!!");
         // 기존 이미지 리스트 가져오기
         List<ReviewImage> existingImages = new ArrayList<>(review.getReviewImages());
 
         // 삭제할 이미지 IDs와 기존 이미지 IDs를 비교하여 삭제할 이미지 결정
         List<ReviewImage> imagesToRemove = existingImages.stream()
-                .filter(existingImage -> deletedImages.contains(String.valueOf(existingImage.getId().getImageId())))
+                .filter(existingImage -> deletedImages.contains(String.valueOf(existingImage.getImage().getImageUrl())))
                 .collect(Collectors.toList());
+
+        for (ReviewImage image : imagesToRemove) {
+            System.out.println("Start");
+            System.out.println("***********"  + image);
+        }
 
         // 삭제할 이미지만 연관 관계에서 제거하고, 나머지는 유지
         review.getReviewImages().removeAll(imagesToRemove);
@@ -68,7 +74,20 @@ public class ReviewImageService {
         imageService.deleteImages(deletedImages);
     }
 
-    public void addImages(Review review, List<ReviewImage> updatedImages) {
+    public void updateReviewImages(Review review, List<ReviewImage> updatedImages) {
+        Set<Long> updatedImageIds = updatedImages.stream()
+                .map(reviewImage -> reviewImage.getId().getImageId())
+                .collect(Collectors.toSet());
+
+        // 기존 이미지 리스트와 업데이트된 이미지 IDs를 비교하여 삭제할 이미지 결정
+        List<ReviewImage> existingImages = new ArrayList<>(review.getReviewImages());
+        List<ReviewImage> imagesToRemove = existingImages.stream()
+                .filter(existingImage -> !updatedImageIds.contains(existingImage.getId().getImageId()))
+                .collect(Collectors.toList());
+
+        // 삭제할 이미지만 연관 관계에서 제거하고, 나머지는 유지
+        review.getReviewImages().removeAll(imagesToRemove);
+
         // 새로운 이미지를 추가
         updatedImages.forEach(newImage -> {
             if (!review.getReviewImages().contains(newImage)) {
@@ -76,8 +95,8 @@ public class ReviewImageService {
             }
         });
 
-        // 변경 사항을 데이터베이스에 반영
         reviewImageRepository.flush();
+        reviewImageRepository.deleteAll(imagesToRemove);
     }
 
     // 주어진 리뷰 ID에 연결된 모든 ReviewImage 객체를 조회
