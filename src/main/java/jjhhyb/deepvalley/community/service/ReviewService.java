@@ -1,6 +1,7 @@
 package jjhhyb.deepvalley.community.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jjhhyb.deepvalley.community.repository.ImageRepository;
 import jjhhyb.deepvalley.community.repository.ReviewImageRepository;
 import jjhhyb.deepvalley.community.repository.ReviewRepository;
 import jjhhyb.deepvalley.community.dto.response.PlaceImageResponse;
@@ -38,6 +39,7 @@ public class ReviewService {
     private final ImageService imageService;
     private final ReviewImageRepository reviewImageRepository;
     private final ReviewTagRepository reviewTagRepository;
+    private final ImageRepository imageRepository;
     private final MemberRepository memberRepository;
     private final PlaceRepository placeRepository;
 
@@ -66,7 +68,7 @@ public class ReviewService {
 
         // 태그 처리
         List<ReviewTag> reviewTags = reviewTagService.processTags(request.getTagNames(), savedReview);
-        updateReviewWithTags(savedReview, reviewTags);
+        createReviewWithTags(savedReview, reviewTags);
 
         updatePlaceMetrics(savedReview.getPlace().getUuid());
         // 응답 객체로 변환 후 반환
@@ -75,30 +77,34 @@ public class ReviewService {
 
     // 리뷰 업데이트
     @Transactional
-    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, List<MultipartFile> newImages, List<String> deletedImages, String userId) {
+    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, List<MultipartFile> imageFiles, String deletedImages, String userId) {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
 
         // 리뷰 엔티티 업데이트
         updateReviewEntity(updateReview, request);
 
-        // 삭제할 이미지가 있는 경우
-        if (deletedImages != null && !deletedImages.isEmpty()) {
-            // 삭제할 이미지 URL에 해당하는 ReviewImage 엔티티 조회
-            List<ReviewImage> reviewImagesToDelete = reviewImageRepository.findByImage_ImageUrlIn(deletedImages);
-
-            // 삭제할 이미지를 컬렉션에서 제거
-            updateReview.getReviewImages().removeAll(reviewImagesToDelete);
-
-            // 이미지 삭제 처리 (S3 및 DB에서 삭제)
-            reviewImageService.deleteAll(reviewImagesToDelete);
-        }
-
-        // 새로운 이미지를 업로드하는 경우
-        if (newImages != null && !newImages.isEmpty()) {
-            List<String> imageUrls = imageService.uploadImagesAndGetUrls(newImages, ImageType.REVIEW);
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
             List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, updateReview);
             updateReviewWithImages(updateReview, reviewImages);
+        }
+
+        // 삭제된 이미지 처리
+        if (deletedImages != null && !deletedImages.isEmpty()) {
+            String[] deletedImageUrls = deletedImages.split(",");
+            for (String deletedImageUrl : deletedImageUrls) {
+                // 현재 리뷰에서 삭제할 ReviewImage 찾기
+                ReviewImage reviewImageToRemove = updateReview.getReviewImages().stream()
+                        .filter(reviewImage -> reviewImage.getImage().getImageUrl().equals(deletedImageUrl))
+                        .findFirst()
+                        .orElse(null);
+                if (reviewImageToRemove != null) {
+                    // ReviewImage 삭제
+                    reviewImageRepository.delete(reviewImageToRemove);
+                    updateReview.getReviewImages().remove(reviewImageToRemove); // 리스트에서 제거
+                }
+            }
         }
 
         // 태그 처리
@@ -270,35 +276,27 @@ public class ReviewService {
         }
     }
 
-    // 리뷰에 이미지와 태그 추가 및 업데이트
     private void createReviewWithImages(Review review, List<ReviewImage> reviewImages) {
         review.setReviewImages(reviewImages);
         reviewRepository.save(review);
         reviewImageRepository.saveAll(reviewImages);
     }
 
-    private void updateReviewWithImages(Review review, List<ReviewImage> newReviewImages) {
-        // 기존 리뷰 이미지 리스트를 가져옵니다.
-        List<ReviewImage> currentReviewImages = review.getReviewImages();
-
-        // 새로운 이미지들을 추가합니다.
-        for (ReviewImage newReviewImage : newReviewImages) {
-            newReviewImage.setReview(review);  // ReviewImage의 review 속성 설정
-            currentReviewImages.add(newReviewImage);  // 기존 리스트에 추가
-        }
-
-        // 리뷰 업데이트: 기존 이미지를 유지하면서 새로운 이미지를 추가한 상태로 리뷰를 업데이트합니다.
-        review.setReviewImages(currentReviewImages);
-
-        // 리뷰 저장
-        reviewRepository.save(review);
-        reviewImageRepository.saveAll(newReviewImages);
-    }
-
-    private void updateReviewWithTags(Review review, List<ReviewTag> reviewTags) {
+    private void createReviewWithTags(Review review, List<ReviewTag> reviewTags) {
         review.setReviewTags(reviewTags);
         reviewRepository.save(review);
         reviewTagRepository.saveAll(reviewTags);
+    }
+
+    private void updateReviewWithImages(Review review, List<ReviewImage> newReviewImages) {
+        List<ReviewImage> currentReviewImages = review.getReviewImages();
+
+        for (ReviewImage newReviewImage : newReviewImages) {
+            newReviewImage.setReview(review);
+            currentReviewImages.add(newReviewImage);
+        }
+
+        review.setReviewImages(currentReviewImages);
     }
 
     private void updateReviewEntity(Review review, ReviewPostRequest request) {
@@ -309,6 +307,7 @@ public class ReviewService {
         review.setPrivacy(ReviewPrivacy.valueOf(request.getPrivacy()));
         review.setUpdatedDate(LocalDateTime.now());
     }
+
     private void updatePlaceMetrics(String placeUuid) {
         Double averageRating = placeRepository.findAverageRatingByPlace(placeUuid);
         Integer reviewCount = placeRepository.countByPlace(placeUuid);

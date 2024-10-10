@@ -12,7 +12,6 @@ import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
 import jjhhyb.deepvalley.community.service.ReviewService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -56,8 +55,8 @@ public class ReviewController {
     public ReviewDetailResponse updateReview(
             @PathVariable("review-id") String reviewId,
             @RequestPart("reviewPostRequest") ReviewPostRequest reviewPostRequest,
-            @RequestPart(value = "imageUrls", required = false) List<MultipartFile> imageFiles,
-            @RequestPart(value = "deleteImageUrls", required = false) List<String> deletedImages,
+            @RequestParam(value = "imageUrls", required = false) List<MultipartFile> imageFiles,
+            @RequestParam(value = "deletedImages", required = false) String deletedImages,
             Authentication auth
     ) {
         String userId = auth.getName(); // 인증이 되어 있는 UserID
