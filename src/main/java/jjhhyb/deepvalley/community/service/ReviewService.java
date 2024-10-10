@@ -58,7 +58,11 @@ public class ReviewService {
         // 생성한 Review 엔티티 데이터베이스에 저장
         Review savedReview = reviewRepository.save(review);
 
-        handleImageUpload(imageFiles, savedReview);
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
+            List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, review);
+            createReviewWithImages(review, reviewImages);
+        }
 
         // 태그 처리
         List<ReviewTag> reviewTags = reviewTagService.processTags(request.getTagNames(), savedReview);
@@ -91,7 +95,11 @@ public class ReviewService {
         }
 
         // 새로운 이미지를 업로드하는 경우
-        handleImageUpload(newImages, updateReview);
+        if (newImages != null && !newImages.isEmpty()) {
+            List<String> imageUrls = imageService.uploadImagesAndGetUrls(newImages, ImageType.REVIEW);
+            List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, updateReview);
+            updateReviewWithImages(updateReview, reviewImages);
+        }
 
         // 태그 처리
         List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
@@ -262,20 +270,12 @@ public class ReviewService {
         }
     }
 
-    private void handleImageUpload(List<MultipartFile> imageFiles, Review review) {
-        if (imageFiles != null && !imageFiles.isEmpty()) {
-            List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
-            List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, review);
-            updateReviewWithImages(review, reviewImages);
-        }
-    }
-
     // 리뷰에 이미지와 태그 추가 및 업데이트
-//    private void updateReviewWithImages(Review review, List<ReviewImage> reviewImages) {
-//        review.setReviewImages(reviewImages);
-//        reviewRepository.save(review);
-//        reviewImageRepository.saveAll(reviewImages);
-//    }
+    private void createReviewWithImages(Review review, List<ReviewImage> reviewImages) {
+        review.setReviewImages(reviewImages);
+        reviewRepository.save(review);
+        reviewImageRepository.saveAll(reviewImages);
+    }
 
     private void updateReviewWithImages(Review review, List<ReviewImage> newReviewImages) {
         // 기존 리뷰 이미지 리스트를 가져옵니다.
