@@ -58,14 +58,7 @@ public class ReviewService {
         // 생성한 Review 엔티티 데이터베이스에 저장
         Review savedReview = reviewRepository.save(review);
 
-        if (imageFiles != null && !imageFiles.isEmpty()) {
-            // 이미지 파일 업로드 및 URL 생성
-            List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
-
-            // 이미지 처리
-            List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, savedReview);
-            updateReviewWithImages(savedReview, reviewImages);
-        }
+        handleImageUpload(imageFiles, savedReview);
 
         // 태그 처리
         List<ReviewTag> reviewTags = reviewTagService.processTags(request.getTagNames(), savedReview);
@@ -78,36 +71,24 @@ public class ReviewService {
 
     // 리뷰 업데이트
     @Transactional
-    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, List<MultipartFile> imageFiles, String deletedImages, String userId) {
+    public ReviewDetailResponse updateReview(String reviewId, ReviewPostRequest request, List<MultipartFile> newImages, List<String> deletedImages, String userId) {
         // 리뷰 존재 여부 및 작성자 확인
         Review updateReview = validateReviewOwner(reviewId, userId);
 
         // 리뷰 엔티티 업데이트
         updateReviewEntity(updateReview, request);
 
-        System.out.println("!!!!!!!!!!!deletedImages : " + deletedImages);
-        // 이미지 삭제 처리 (deletedImages에 있는 URL을 삭제)
+        // 삭제할 이미지가 있는 경우
         if (deletedImages != null && !deletedImages.isEmpty()) {
-            // 쉼표로 구분된 URL을 리스트로 변환
-            List<String> deletedImagesList = Arrays.asList(deletedImages.split(","));
-            System.out.println("삭제할 이미지: " + deletedImagesList);
-            reviewImageService.removeImages(updateReview, deletedImagesList);
+            // 삭제할 이미지 URL에 해당하는 ReviewImage 엔티티 조회
+            List<ReviewImage> reviewImagesToDelete = reviewImageRepository.findByImage_ImageUrlIn(deletedImages);
+
+            // 이미지 삭제 처리 (S3 및 DB에서 삭제)
+            reviewImageService.deleteAll(reviewImagesToDelete);
         }
 
-        // 새로운 이미지가 있는지 확인
-        if (imageFiles != null && !imageFiles.isEmpty()) {
-            // 이미지 파일 업로드 및 URL 생성 & 새로운 ReviewImage 객체 생성
-            List<String> newImageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
-            List<ReviewImage> updatedReviewImages = reviewImageService.processImages(newImageUrls, updateReview);
-
-            // 리뷰 이미지 업데이트 (기존 이미지와 새 이미지 처리)
-            reviewImageService.updateReviewImages(updateReview, updatedReviewImages);
-        } else {
-            // 이미지 파일이 없는 경우: 기존 이미지가 있다면 삭제 처리
-            if (!updateReview.getReviewImages().isEmpty()) {
-                reviewImageService.deleteAll(updateReview.getReviewImages());
-            }
-        }
+        // 새로운 이미지를 업로드하는 경우
+        handleImageUpload(newImages, updateReview);
 
         // 태그 처리
         List<ReviewTag> updatedReviewTags = reviewTagService.processTags(request.getTagNames(), updateReview);
@@ -116,7 +97,9 @@ public class ReviewService {
         // 업데이트된 리뷰 저장
         reviewRepository.save(updateReview);
 
+        // 리뷰와 연결된 장소 정보 업데이트
         updatePlaceMetrics(updateReview.getPlace().getUuid());
+
         return ReviewDetailResponse.from(updateReview);
     }
 
@@ -273,6 +256,14 @@ public class ReviewService {
             return LocalDate.parse(visitedDateStr);
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException(INVALID_DATE_FORMAT + visitedDateStr, e);
+        }
+    }
+
+    private void handleImageUpload(List<MultipartFile> imageFiles, Review review) {
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> imageUrls = imageService.uploadImagesAndGetUrls(imageFiles, ImageType.REVIEW);
+            List<ReviewImage> reviewImages = reviewImageService.processImages(imageUrls, review);
+            updateReviewWithImages(review, reviewImages);
         }
     }
 
