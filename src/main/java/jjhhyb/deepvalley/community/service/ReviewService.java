@@ -271,10 +271,28 @@ public class ReviewService {
     }
 
     // 리뷰에 이미지와 태그 추가 및 업데이트
-    private void updateReviewWithImages(Review review, List<ReviewImage> reviewImages) {
-        review.setReviewImages(reviewImages);
+//    private void updateReviewWithImages(Review review, List<ReviewImage> reviewImages) {
+//        review.setReviewImages(reviewImages);
+//        reviewRepository.save(review);
+//        reviewImageRepository.saveAll(reviewImages);
+//    }
+
+    private void updateReviewWithImages(Review review, List<ReviewImage> newReviewImages) {
+        // 기존 리뷰 이미지 리스트를 가져옵니다.
+        List<ReviewImage> currentReviewImages = review.getReviewImages();
+
+        // 새로운 이미지들을 추가합니다.
+        for (ReviewImage newReviewImage : newReviewImages) {
+            newReviewImage.setReview(review);  // ReviewImage의 review 속성 설정
+            currentReviewImages.add(newReviewImage);  // 기존 리스트에 추가
+        }
+
+        // 리뷰 업데이트: 기존 이미지를 유지하면서 새로운 이미지를 추가한 상태로 리뷰를 업데이트합니다.
+        review.setReviewImages(currentReviewImages);
+
+        // 리뷰 저장
         reviewRepository.save(review);
-        reviewImageRepository.saveAll(reviewImages);
+        reviewImageRepository.saveAll(newReviewImages);
     }
 
     private void updateReviewWithTags(Review review, List<ReviewTag> reviewTags) {
