@@ -83,6 +83,9 @@ public class ReviewService {
             // 삭제할 이미지 URL에 해당하는 ReviewImage 엔티티 조회
             List<ReviewImage> reviewImagesToDelete = reviewImageRepository.findByImage_ImageUrlIn(deletedImages);
 
+            // 삭제할 이미지를 컬렉션에서 제거
+            updateReview.getReviewImages().removeAll(reviewImagesToDelete);
+
             // 이미지 삭제 처리 (S3 및 DB에서 삭제)
             reviewImageService.deleteAll(reviewImagesToDelete);
         }
