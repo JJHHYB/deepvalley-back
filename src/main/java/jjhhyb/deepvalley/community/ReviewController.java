@@ -12,7 +12,6 @@ import jjhhyb.deepvalley.community.dto.response.ReviewDetailResponse;
 import jjhhyb.deepvalley.community.dto.response.ReviewsResponse;
 import jjhhyb.deepvalley.community.service.ReviewService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -56,11 +55,12 @@ public class ReviewController {
     public ReviewDetailResponse updateReview(
             @PathVariable("review-id") String reviewId,
             @RequestPart("reviewPostRequest") ReviewPostRequest reviewPostRequest,
-            @RequestPart(value = "imageUrls", required = false) List<MultipartFile> imageFiles,
+            @RequestParam(value = "imageUrls", required = false) List<MultipartFile> imageFiles,
+            @RequestParam(value = "deletedImages", required = false) String deletedImages,
             Authentication auth
     ) {
         String userId = auth.getName(); // 인증이 되어 있는 UserID
-        return reviewService.updateReview(reviewId, reviewPostRequest, imageFiles, userId);
+        return reviewService.updateReview(reviewId, reviewPostRequest, imageFiles, deletedImages, userId);
     }
 
     @DeleteMapping("/api/review/{review-id}")
@@ -89,9 +89,11 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     public List<PlaceImageResponse> searchReviewImage(
-            @PathVariable("valley-id") String placeId
+            @PathVariable("valley-id") String placeId,
+            Authentication auth
     ) {
-        return reviewService.searchReviewImage(placeId);
+        String userId = auth.getName();
+        return reviewService.searchReviewImage(placeId, userId);
     }
 
     @GetMapping("/api/valley/{valley-id}/review")
@@ -102,9 +104,11 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     public ReviewsResponse getPlaceReviews(
-            @PathVariable("valley-id") String placeId
+            @PathVariable("valley-id") String placeId,
+            Authentication auth
     ) {
-        return reviewService.getPlaceReviews(placeId);
+        String userId = auth.getName();
+        return reviewService.getPlaceReviews(placeId, userId);
     }
 
     @GetMapping("/api/review/{review-id}/detail")
@@ -115,9 +119,11 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     public ReviewDetailResponse getReviewDetail(
-            @PathVariable("review-id") String reviewId
+            @PathVariable("review-id") String reviewId,
+            Authentication auth
     ) {
-        return reviewService.getReviewDetail(reviewId);
+        String userId = auth.getName();
+        return reviewService.getReviewDetail(reviewId, userId);
     }
 
     @GetMapping("/api/member/{member-id}/review")

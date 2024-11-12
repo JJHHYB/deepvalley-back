@@ -6,13 +6,13 @@ import jjhhyb.deepvalley.image.Image;
 import jjhhyb.deepvalley.community.entity.Review;
 import jjhhyb.deepvalley.community.entity.ReviewImage;
 import jjhhyb.deepvalley.entityId.ReviewImageId;
-import jjhhyb.deepvalley.image.ImageService;
+import jjhhyb.deepvalley.image.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,23 +20,24 @@ import java.util.stream.Collectors;
 public class ReviewImageService {
     private final ImageRepository imageRepository;
     private final ReviewImageRepository reviewImageRepository;
-    private final ImageService imageService;
+    private final S3Service s3Service;
 
-    // 이미지 URL 리스트로 ReviewImage 객체 리스트 생성
+    // 이미지 처리 (ReviewImage 객체 리스트 생성)
     public List<ReviewImage> processImages(List<String> imageUrls, Review review) {
-        return imageUrls.stream()
+        // 각 이미지 URL에 대해 이미지가 데이터베이스에 존재하는지 확인하고, 없으면 새로 저장
+        List<String> urls = imageUrls != null ? imageUrls : Collections.emptyList();
+        return urls.stream()
                 .map(imageUrl -> createOrUpdateImage(imageUrl, review))
                 .collect(Collectors.toList());
     }
 
     // 이미지 URL로 Image 객체 생성 or 업데이트
     private ReviewImage createOrUpdateImage(String imageUrl, Review review) {
-        // 데이터베이스에서 이미지 조회, 없으면 새로 생성
+        // 주어진 이미지 URL에 대한 Image 객체를 조회하거나 새로 생성
         Image image = imageRepository.findByImageUrl(imageUrl);
         if (image == null) {
             image = imageRepository.save(new Image(imageUrl));
         }
-        // ReviewImage 객체 생성
         return ReviewImage.builder()
                 .id(new ReviewImageId(review.getReviewId(), image.getImageId()))
                 .review(review)
@@ -44,38 +45,16 @@ public class ReviewImageService {
                 .build();
     }
 
-    // 리뷰와 연결된 이미지 업데이트
-    public void updateReviewImages(Review review, List<ReviewImage> updatedImages) {
-        Set<Long> updatedImageIds = updatedImages.stream()
-                .map(reviewImage -> reviewImage.getId().getImageId())
-                .collect(Collectors.toSet());
-
-        // 기존 이미지 리스트와 업데이트된 이미지 IDs를 비교하여 삭제할 이미지들을 결정
-        List<ReviewImage> existingImages = new ArrayList<>(review.getReviewImages());   // 모든 기존 이미지
-        List<ReviewImage> imagesToDelete = existingImages.stream()                      // 더 이상 사용되지 않는 이미지를 필터링해 포함
-                .filter(existingImage -> !updatedImageIds.contains(existingImage.getId().getImageId()))
-                .toList();
-
-        // 기존 이미지를 리뷰와의 연관관계에서 제거
-        review.getReviewImages().removeAll(existingImages);
-        reviewImageRepository.flush();
-
-        review.getReviewImages().clear();
-        review.getReviewImages().addAll(updatedImages);
-
-        // S3에서 이미지 삭제
-        imageService.deleteImages(imagesToDelete.stream()
-                .map(image -> image.getImage().getImageUrl())
-                .collect(Collectors.toList()));
-        // 데이터 베이스에서 삭제
-        reviewImageRepository.deleteAll(existingImages);
-    }
-
-    // 주어진 ReviewImage 리스트의 모든 이미지 삭제
+    // 주어진 ReviewImage 리스트의 모든 이미지를 삭제
+    @Transactional
     public void deleteAll(List<ReviewImage> reviewImages) {
-        imageService.deleteImages(reviewImages.stream()
-                .map(image -> image.getImage().getImageUrl())
-                .collect(Collectors.toList()));
-        reviewImageRepository.deleteAll(reviewImages);
+        for (ReviewImage reviewImage : reviewImages) {
+            // S3에서 이미지 삭제 (imageUrl 필드 사용)
+            String imageUrl = reviewImage.getImage().getImageUrl();
+            s3Service.deleteImage(imageUrl); // S3에서 이미지 삭제하는 메서드 호출
+
+            // DB에서 ReviewImage 삭제
+            reviewImageRepository.delete(reviewImage);
+        }
     }
 }
